@@ -40,7 +40,9 @@ var Cars = Backbone.Collection.extend({
 var CarView = Backbone.View.extend({
 
     config : {
-        vmax : 5
+        vmax : 100,
+        a : 10,
+        da : 10
     },
 
     context : null,
@@ -66,16 +68,13 @@ var CarView = Backbone.View.extend({
         // setup new layer with a car
 
         if(this.model.master){
-            Game.board.on('mousedown', $.proxy(this.turn, this));
-            Game.board.on('mouseup', $.proxy(this.stopTurn, this));
+            $("body").keydown($.proxy(this.keydown, this));
+            $("body").keyup($.proxy(this.keyup, this));
         }
 
         this.model.bind("change", this.render, this);
 
-        this.mousePosition = {
-            x : 0, 
-            y : 0
-        };
+        this.keyw = this.keys = this.keya = this.keyd = false;
 
         window.setInterval($.proxy(this.engine, this), 50);
     },
@@ -89,72 +88,112 @@ var CarView = Backbone.View.extend({
     },
 
 
-    turn : function(evt){
-        if(!evt){
-            evt = document.event;
+    keydown : function(e) {
+        var keynum;
+
+        if(window.event) {// IE 
+            keynum = e.keyCode
+        } else if(e.which) { // Netscape/Firefox/Opera
+            keynum = e.which
         }
 
-        this.mousePosition.x = evt.layerX;
-        this.mousePosition.y = evt.layerY;
+        var keychar = String.fromCharCode(keynum);
+
+        if(keychar=="W" || keychar=="&")
+            this.keyw = true;
+        else if(keychar=="S" || keychar=="(")
+            this.keys = true;
+        else if(keychar=="A" || keychar=="%")
+            this.keya = true;
+        else if(keychar=="D" || keychar=="'")
+            this.keyd = true;
+        else if(keychar=="X")
+            this.fireTorpedo();
     },
 
 
-    stopTurn : function(){
-        this.mousePosition.x = this.mousePosition.y = 0;
+    keyup : function(e) {
+
+        var keynum;
+        var keychar;
+
+        if(window.event) {// IE
+            keynum = e.keyCode
+        } else if(e.which) {// Netscape/Firefox/Opera
+            keynum = e.which
+        }
+
+        keychar = String.fromCharCode(keynum);
+
+        if(keychar=="W" || keychar=="&")
+            this.keyw = false;
+        else if(keychar=="S" || keychar=="(")
+            this.keys = false;
+        else if(keychar=="A" || keychar=="%")
+            this.keya = false;
+        else if(keychar=="D" || keychar=="'")
+            this.keyd = false;
     },
 
 
     engine : function() {
 
-        var a = 5, da = 1, t = 0.05;
+        var a = 0, t = 0.1;
 
-        var curr= this.model.get("currPosition");
-        var currPos = {
-            x : curr.x,
-            y : curr.y
-        };
+        var currPos = this.model.get("currPosition");
 
         var u = this.model.get("u");
 
-        var dy = this.mousePosition.y - currPos.y;
-        var dx = this.mousePosition.x - currPos.x;      
-           
-        if(this.mousePosition.x != 0){ 
-            // accelerate
-            var ax = a * ( dx/ Math.sqrt(Math.pow(dx,2)+Math.pow(dy,2)));
-            var ay = a * ( dy/ Math.sqrt(Math.pow(dx,2)+Math.pow(dy,2)));
-        } else {
-            // apply brakes
-            var ax = u.x > 0 ? -da : da;  // sign of ux
-            var ay = u.y > 0 ? -da : da;
+        var q = this.model.get("direction");
+
+
+        // acceleration
+        if(this.keyw) {
+            a = u < 0 ? this.config.a + this.config.da : this.config.a;
+
+        } else if(this.keys) {
+            a = u > 0? -(this.config.a + this.config.da) : -this.config.a;
+
+        } else { // brakes
+
+            if(u > 0) {
+                a = -this.config.da;
+            } else if(u < 0) {
+                a = this.config.da;
+            }
         }
 
-        // calculate velocity
-        var vx = u.x + ax * t;
-        var vy = u.y + ay * t;
-             
-        // limit max velocity
-        if(Math.abs(vx) > this.config.vmax)
-            vx = vx > 0 ? this.config.vmax : -this.config.vmax;
         
-        if(Math.abs(vy) > this.config.vmax)
-            vy = vy > 0 ? this.config.vmax : -this.config.vmax;
+        // angle
+        if( this.keya && u != 0) {
+            q = u < 0 ? q + 0.1 : q - 0.1;
 
+        } else if( this.keyd && u != 0) {
+            q = u < 0 ? q - 0.1 : q + 0.1;
+        }
 
-        // set new velocities
-        u.x = vx;
-        u.y = vy;
+        var d = u * t + (a * Math.pow(t, 2))/2;          
+        var v = u + a * t;
+    
+        var ang = q % 6.28;
 
-        // velocity is distance travelled per unit time
-        var stepX = Math.round(vx); // distance travelled in unit time
-        var stepY = Math.round(vy); 
-                
-        currPos.x += stepX;
-        currPos.y += stepY; 
+        u = v > this.config.vmax ? this.config.vmax : v;
+    
+        var dx = Math.round(d * Math.cos(q));
+        var dy = Math.round(d * Math.sin(q));
+
+        currPos.x += dx;
+        currPos.y += dy;
+
+        if(ang < 0)
+            angle = 6.28 + ang;
+        else 
+            angle = ang;
 
         this.model.set({
             u : u,
-            currPosition : currPos
+            currPosition : currPos,
+            direction : angle
         });
 
         if(this.model.master)
@@ -165,6 +204,63 @@ var CarView = Backbone.View.extend({
 
     exhaust : function() {
         this.model.save();
+    },
+
+
+    fireTorpedo : function() {
+
+        var currPos = this.model.get("currPosition");
+
+        if(!this.weaponLayer){
+
+            this.weaponLayer = new Kinetic.Layer();
+
+            this.torpedo = new Kinetic.Shape(function(){
+                var context = this.getContext();
+                context.fillStyle = "#222";
+                context.beginPath();
+                context.arc(0, 0, 3, 0, Math.PI * 2, true);
+                context.fill();
+            });
+
+            this.weaponLayer.add(this.torpedo);
+
+            Game.stage.add(this.weaponLayer);
+
+        } else if(this.torpedo.dead == false) {
+            return false;
+        }
+
+        this.torpedo.setPosition(currPos.x, currPos.y);
+        this.weaponLayer.draw();
+
+        this.torpedo.dead = false;
+        this.torpedo.u = this.model.get("u");
+        this.torpedo.q = this.model.get("direction");
+        this.torpedo.timestamp = Date.now();
+
+        this.moveTorpedo();
+    },
+
+
+    moveTorpedo : function() {
+        var a = 100, t = 0.1, u = this.torpedo.u;
+        var d = u * t + (a * Math.pow(t, 2))/2;
+        var v = u + a * t;
+        this.torpedo.u = v;
+
+        var dx = Math.round(d * Math.cos(this.torpedo.q));
+        var dy = Math.round(d * Math.sin(this.torpedo.q));
+
+        this.torpedo.move(dx, dy);
+        this.weaponLayer.draw();
+
+        if(Date.now() > this.torpedo.timestamp + 3000){
+            this.torpedo.dead = true;
+            return false;
+        }
+
+        window.setTimeout($.proxy(this.moveTorpedo, this), 50);
     }
     
 });
@@ -189,14 +285,13 @@ $(function() {
 
     Game.allCars = new Cars();
 
-    // game.allCars.create({
+    // Game.allCars.create({
+    //     u : 0,
+    //     direction : 0,
+    //     master : true,
     //     currPosition : {
-    //         x : 100, 
-    //         y : 100
-    //     },
-    //     u : {
-    //         x : 0,
-    //         y : 0
+    //         x : Math.round(Math.random()*100), 
+    //         y : Math.round(Math.random()*100)
     //     }
     // });
 

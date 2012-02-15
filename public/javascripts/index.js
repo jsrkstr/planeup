@@ -54,12 +54,24 @@ var CarView = Backbone.View.extend({
         // setup new layer with a car
         this.layer = new Kinetic.Layer();
 
+        var carImage = $("#red-car-image").clone()[0];
+
         this.car = new Kinetic.Shape(function(){
             var context = this.getContext();
-            context.fillStyle = "#666";
-            context.beginPath();
-            context.arc(0, 0, 5, 0, Math.PI * 2, true);
-            context.fill();
+
+            ///context.drawImage(carImage, 0, 0);
+
+            var sourceX = 0;
+            var sourceY = 0;
+            var sourceWidth = 60;
+            var sourceHeight = 30;
+            var destWidth = sourceWidth;
+            var destHeight = sourceHeight;
+            var destX = -30;
+            var destY = -15;
+     
+            context.drawImage(carImage, sourceX, sourceY, sourceWidth, sourceHeight, destX, destY, destWidth, destHeight);
+
         });
 
         this.layer.add(this.car);
@@ -72,7 +84,7 @@ var CarView = Backbone.View.extend({
             $("body").keyup($.proxy(this.keyup, this));
         }
 
-        this.model.bind("change", this.render, this);
+        //this.model.bind("change", this.render, this);
 
         this.keyw = this.keys = this.keya = this.keyd = false;
 
@@ -83,6 +95,7 @@ var CarView = Backbone.View.extend({
     render: function() {
         var currPosition = this.model.get("currPosition");
         this.car.setPosition(currPosition.x, currPosition.y);
+        this.car.setRotation(this.model.get("direction"));
         this.layer.draw();
         return this;
     },
@@ -196,14 +209,11 @@ var CarView = Backbone.View.extend({
             direction : angle
         });
 
+        this.render();
+
         if(this.model.master)
-            this.exhaust();
+            this.model.save();
         
-    },
-
-
-    exhaust : function() {
-        this.model.save();
     },
 
 

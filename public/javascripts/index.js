@@ -13,6 +13,29 @@ var Car = Backbone.Model.extend({
     
 });
 
+
+
+
+var Torpedo = Backbone.Model.extend({
+
+    defaults : {
+        u : 200,
+        direction : 0,
+        currPos : {
+            x : 0,
+            y : 0
+        }
+    },
+    
+    initialize: function(args) {
+        new TorpedoView({model : this});
+    }
+    
+});
+
+
+
+
 var Cars = Backbone.Collection.extend({
     
     // Specify the backend with which to sync
@@ -37,6 +60,108 @@ var Cars = Backbone.Collection.extend({
 
 
 
+var Torpedos = Backbone.Collection.extend({
+    
+    // Specify the backend with which to sync
+    backend: 'torpedos',
+
+    model: Torpedo,
+
+    initialize: function() {
+        // Setup default backend bindings
+        this.bindBackend();
+
+        this.bind('backend:update', this.addExistingTorpedo, this);
+    },
+
+    addExistingTorpedo : function(model) {
+        if(!this.get(model.id)){
+            this.add(model);
+        }
+    }
+
+});
+
+
+
+
+
+var TorpedoView = Backbone.View.extend({
+
+    timeToLive : 2000,
+
+    initialize: function() {
+
+        // setup new layer with a torpedo
+        this.layer = new Kinetic.Layer("torpedo layer");
+
+        this.torpedo = new Kinetic.Shape(function(){
+            var context = this.getContext();
+            context.fillStyle = "#222";
+            context.beginPath();
+            context.arc(0, 0, 3, 0, Math.PI * 2, true);
+            context.fill();
+        });
+
+        this.layer.add(this.torpedo);
+
+        Game.stage.add(this.layer);
+        // setup new layer with a torpedo
+
+        this.timestamp = Date.now();
+
+        this.timer = window.setInterval($.proxy(this.engine, this), 50);
+    },
+
+
+    render : function() {
+        var currPos = this.model.get("currPosition");
+        this.torpedo.setPosition(currPos.x, currPos.y);
+        this.layer.draw();
+    },
+
+
+    engine : function() {
+
+        var a = 0, t = 0.1, 
+        u = this.model.get("u"),
+        q = this.model.get("direction"),
+        currPos = this.model.get("currPosition");
+
+        var d = u * t + (a * Math.pow(t, 2))/2;
+        var v = u + a * t;
+
+        var dx = Math.round(d * Math.cos(q));
+        var dy = Math.round(d * Math.sin(q));
+
+        currPos.x += dx;
+        currPos.y += dy;
+
+        this.model.set({
+           u :  v,
+           currPosition : currPos
+        });
+
+        this.render();
+
+        if(Date.now() > this.timestamp + this.timeToLive){
+            window.clearInterval(this.timer);
+            this.remove();
+            return false;
+        }
+    },
+
+
+    remove : function() {
+        Game.stage.remove(this.layer);
+    }
+
+});
+
+
+
+
+
 var CarView = Backbone.View.extend({
 
     config : {
@@ -52,7 +177,7 @@ var CarView = Backbone.View.extend({
     initialize: function(args) {
 
         // setup new layer with a car
-        this.layer = new Kinetic.Layer();
+        this.layer = new Kinetic.Layer("car layer");
 
         var carImage = $("#red-car-image").clone()[0];
 
@@ -87,6 +212,8 @@ var CarView = Backbone.View.extend({
         //this.model.bind("change", this.render, this);
 
         this.keyw = this.keys = this.keya = this.keyd = false;
+
+        this.torpedos = new Torpedos();
 
         window.setInterval($.proxy(this.engine, this), 50);
     },
@@ -219,61 +346,22 @@ var CarView = Backbone.View.extend({
 
     fireTorpedo : function() {
 
+        var d = parseFloat(this.model.get('direction'));
         var currPos = this.model.get("currPosition");
+        var c = {
+            x : parseFloat(currPos.x),
+            y : parseFloat(currPos.y)
+        };
 
-        if(!this.weaponLayer){
-
-            this.weaponLayer = new Kinetic.Layer();
-
-            this.torpedo = new Kinetic.Shape(function(){
-                var context = this.getContext();
-                context.fillStyle = "#222";
-                context.beginPath();
-                context.arc(0, 0, 3, 0, Math.PI * 2, true);
-                context.fill();
-            });
-
-            this.weaponLayer.add(this.torpedo);
-
-            Game.stage.add(this.weaponLayer);
-
-        } else if(this.torpedo.dead == false) {
-            return false;
-        }
-
-        this.torpedo.setPosition(currPos.x, currPos.y);
-        this.weaponLayer.draw();
-
-        this.torpedo.dead = false;
-        this.torpedo.u = this.model.get("u");
-        this.torpedo.q = this.model.get("direction");
-        this.torpedo.timestamp = Date.now();
-
-        this.moveTorpedo();
-    },
-
-
-    moveTorpedo : function() {
-        var a = 100, t = 0.1, u = this.torpedo.u;
-        var d = u * t + (a * Math.pow(t, 2))/2;
-        var v = u + a * t;
-        this.torpedo.u = v;
-
-        var dx = Math.round(d * Math.cos(this.torpedo.q));
-        var dy = Math.round(d * Math.sin(this.torpedo.q));
-
-        this.torpedo.move(dx, dy);
-        this.weaponLayer.draw();
-
-        if(Date.now() > this.torpedo.timestamp + 3000){
-            this.torpedo.dead = true;
-            return false;
-        }
-
-        window.setTimeout($.proxy(this.moveTorpedo, this), 50);
+        this.torpedos.create({
+            direction : d,
+            currPosition : c
+        });
     }
     
 });
+
+
 
 $(function() {
 

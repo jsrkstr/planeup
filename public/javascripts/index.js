@@ -383,14 +383,14 @@ $(function() {
 
     Game.allCars = new Cars();
 
-    // Game.allCars.create({
-    //     u : 0,
-    //     direction : 0,
-    //     master : true,
-    //     currPosition : {
-    //         x : Math.round(Math.random()*100), 
-    //         y : Math.round(Math.random()*100)
-    //     }
-    // });
+    Game.allCars.create({
+        u : 0,
+        direction : 0,
+        master : true,
+        currPosition : {
+            x : Math.round(Math.random()*100), 
+            y : Math.round(Math.random()*100)
+        }
+    });
 
 });

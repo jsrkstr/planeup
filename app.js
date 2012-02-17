@@ -27,7 +27,9 @@ app.configure('production', function(){
   app.use(express.errorHandler());
 });
 
-app.listen(3000);
+var port = process.env.PORT || 3000;
+
+app.listen(port);
 
 
 var cars = backboneio.createBackend();

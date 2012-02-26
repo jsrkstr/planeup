@@ -8,7 +8,7 @@ var Car = Backbone.Model.extend({
             this.set({master : false});
         }
 
-        new CarView({model : this});
+        this.view = new CarView({model : this});
     }
     
 });
@@ -50,10 +50,12 @@ var CarView = Backbone.View.extend({
 
     initialize: function(args) {
         gs.addEntity(this);
+        Game.allCarViews.push(this);
     },
     
 
     update : function() {
+
         var t = 0.1, 
         a = this.model.get("a") || 0,
         u = this.model.get("u"),
@@ -106,20 +108,33 @@ var CarView = Backbone.View.extend({
     
 
     draw : function(context) {
-        var carImage = document.getElementById("red-car-image");// $("#red-car-image").clone()[0];
         var currPos = this.model.get("currPosition");
         var angle = this.model.get("direction");
+        var team = this.model.get("team");
 
-        var sourceX = currPos.x;
-        var sourceY = currPos.y;
-        // var sourceWidth = 60;
-        // var sourceHeight = 30;
-        // var destWidth = sourceWidth;
-        // var destHeight = sourceHeight;
-        // var destX = -30;
-        // var destY = -15;
-        context.rotate(angle);
-        context.drawImage(carImage, sourceX, sourceY); //, sourceWidth, sourceHeight, destX, destY, destWidth, destHeight);
+        var carImage = document.getElementById(team + "-plane-image");// $("#red-car-image").clone()[0];
+
+
+        var sourceX = 48 * Math.round(angle * 10);
+        var sourceY = 0;
+        var sourceWidth = 48;
+        var sourceHeight = 48;
+        var destWidth = sourceWidth;
+        var destHeight = sourceHeight;
+        var destX = currPos.x;
+        var destY = currPos.y;
+
+        context.drawImage(carImage, sourceX, sourceY, sourceWidth, sourceHeight, destX, destY, destWidth, destHeight);
+    },
+
+
+    get_collision_circle : function() {
+        var currPos = this.model.get("currPosition");
+        return [[currPos.x, currPos.y], 15];
+    },
+    
+    collide_circle : function(who) {
+      console.log("collision!!");
     },
 
 
@@ -169,10 +184,15 @@ var CarView = Backbone.View.extend({
 
 
 function World(gs) {
+
+    this.update = function(){
+        collide.circles(Game.allCarViews, Game.allCarViews);
+    };
+
     this.draw = function(context) {
         gs.clear();
         gs.background('rgba(100, 100, 100, 1.0)');
-    }
+    };
 }
 
 
@@ -187,21 +207,36 @@ $(function() {
 
 
 
-
-
     Game = {};
 
     Game.allCars = new Cars();
 
-    var car = Game.allCars.create({
+    Game.allCarViews = [];
+
+    car1 = Game.allCars.create({
         u : 0,
         direction : 0,
         master : true,
+        team : "red",
         currPosition : {
             x : gs.random(10, 100),
             y : gs.random(10, 100)
         }
     });
 
+
+    car2 = Game.allCars.create({
+        u : 0,
+        direction : Math.PI,
+        master : false,
+        team : "blue",
+        currPosition : {
+            x : gs.random(300, 100),
+            y : gs.random(10, 100)
+        }
+    });
+
+
     gs.launch();
+
 });

@@ -16,27 +16,8 @@ var Car = Backbone.Model.extend({
 
 
 
-var Torpedo = Backbone.Model.extend({
-
-    defaults : {
-        u : 200,
-        direction : 0,
-        currPos : {
-            x : 0,
-            y : 0
-        }
-    },
-    
-    initialize: function(args) {
-        new TorpedoView({model : this});
-    }
-    
-});
-
-
-
-
 var Cars = Backbone.Collection.extend({
+
     
     // Specify the backend with which to sync
     backend: 'cars',
@@ -48,112 +29,6 @@ var Cars = Backbone.Collection.extend({
         this.bindBackend();
 
         this.bind('backend:update', this.addExistingCar, this);
-    },
-
-    addExistingCar : function(model) {
-        if(!this.get(model.id)){
-            this.add(model);
-        }
-    }
-
-});
-
-
-
-var Torpedos = Backbone.Collection.extend({
-    
-    // Specify the backend with which to sync
-    backend: 'torpedos',
-
-    model: Torpedo,
-
-    initialize: function() {
-        // Setup default backend bindings
-        this.bindBackend();
-
-        this.bind('backend:update', this.addExistingTorpedo, this);
-    },
-
-    addExistingTorpedo : function(model) {
-        if(!this.get(model.id)){
-            this.add(model);
-        }
-    }
-
-});
-
-
-
-
-
-var TorpedoView = Backbone.View.extend({
-
-    timeToLive : 2000,
-
-    initialize: function() {
-
-        // setup new layer with a torpedo
-        this.layer = new Kinetic.Layer("torpedo layer");
-
-        this.torpedo = new Kinetic.Shape(function(){
-            var context = this.getContext();
-            context.fillStyle = "#222";
-            context.beginPath();
-            context.arc(0, 0, 3, 0, Math.PI * 2, true);
-            context.fill();
-        });
-
-        this.layer.add(this.torpedo);
-
-        Game.stage.add(this.layer);
-        // setup new layer with a torpedo
-
-        this.timestamp = Date.now();
-
-        this.timer = window.setInterval($.proxy(this.engine, this), 50);
-    },
-
-
-    render : function() {
-        var currPos = this.model.get("currPosition");
-        this.torpedo.setPosition(currPos.x, currPos.y);
-        this.layer.draw();
-    },
-
-
-    engine : function() {
-
-        var a = 0, t = 0.1, 
-        u = this.model.get("u"),
-        q = this.model.get("direction"),
-        currPos = this.model.get("currPosition");
-
-        var d = u * t + (a * Math.pow(t, 2))/2;
-        var v = u + a * t;
-
-        var dx = Math.round(d * Math.cos(q));
-        var dy = Math.round(d * Math.sin(q));
-
-        currPos.x += dx;
-        currPos.y += dy;
-
-        this.model.set({
-           u :  v,
-           currPosition : currPos
-        });
-
-        this.render();
-
-        if(Date.now() > this.timestamp + this.timeToLive){
-            window.clearInterval(this.timer);
-            this.remove();
-            return false;
-        }
-    },
-
-
-    remove : function() {
-        Game.stage.remove(this.layer);
     }
 
 });
@@ -164,134 +39,32 @@ var TorpedoView = Backbone.View.extend({
 
 var CarView = Backbone.View.extend({
 
+    radius : 10,
+
     config : {
         vmax : 100,
-        a : 10,
-        da : 10
+        a : 100,
+        da : 30
     },
 
-    context : null,
 
-    canvas : null,
-    
     initialize: function(args) {
-
-        // setup new layer with a car
-        this.layer = new Kinetic.Layer("car layer");
-
-        var carImage = $("#red-car-image").clone()[0];
-
-        this.car = new Kinetic.Shape(function(){
-            var context = this.getContext();
-
-            ///context.drawImage(carImage, 0, 0);
-
-            var sourceX = 0;
-            var sourceY = 0;
-            var sourceWidth = 60;
-            var sourceHeight = 30;
-            var destWidth = sourceWidth;
-            var destHeight = sourceHeight;
-            var destX = -30;
-            var destY = -15;
-     
-            context.drawImage(carImage, sourceX, sourceY, sourceWidth, sourceHeight, destX, destY, destWidth, destHeight);
-
-        });
-
-        this.layer.add(this.car);
-
-        Game.stage.add(this.layer);
-        // setup new layer with a car
-
-        if(this.model.master){
-            $("body").keydown($.proxy(this.keydown, this));
-            $("body").keyup($.proxy(this.keyup, this));
-        }
-
-        //this.model.bind("change", this.render, this);
-
-        this.keyw = this.keys = this.keya = this.keyd = false;
-
-        this.torpedos = new Torpedos();
-
-        window.setInterval($.proxy(this.engine, this), 50);
+        gs.addEntity(this);
     },
     
 
-    render: function() {
-        var currPosition = this.model.get("currPosition");
-        this.car.setPosition(currPosition.x, currPosition.y);
-        this.car.setRotation(this.model.get("direction"));
-        this.layer.draw();
-        return this;
-    },
-
-
-    keydown : function(e) {
-        var keynum;
-
-        if(window.event) {// IE 
-            keynum = e.keyCode
-        } else if(e.which) { // Netscape/Firefox/Opera
-            keynum = e.which
-        }
-
-        var keychar = String.fromCharCode(keynum);
-
-        if(keychar=="W" || keychar=="&")
-            this.keyw = true;
-        else if(keychar=="S" || keychar=="(")
-            this.keys = true;
-        else if(keychar=="A" || keychar=="%")
-            this.keya = true;
-        else if(keychar=="D" || keychar=="'")
-            this.keyd = true;
-        else if(keychar=="X")
-            this.fireTorpedo();
-    },
-
-
-    keyup : function(e) {
-
-        var keynum;
-        var keychar;
-
-        if(window.event) {// IE
-            keynum = e.keyCode
-        } else if(e.which) {// Netscape/Firefox/Opera
-            keynum = e.which
-        }
-
-        keychar = String.fromCharCode(keynum);
-
-        if(keychar=="W" || keychar=="&")
-            this.keyw = false;
-        else if(keychar=="S" || keychar=="(")
-            this.keys = false;
-        else if(keychar=="A" || keychar=="%")
-            this.keya = false;
-        else if(keychar=="D" || keychar=="'")
-            this.keyd = false;
-    },
-
-
-    engine : function() {
-
-        var a = 0, t = 0.1;
-
-        var currPos = this.model.get("currPosition");
-
-        var u = this.model.get("u");
-
-        var q = this.model.get("direction");
-
+    update : function() {
+        var t = 0.1, 
+        a = this.model.get("a") || 0,
+        u = this.model.get("u"),
+        q = this.model.get("direction"),
+        currPos = this.model.get("currPosition");
 
         // acceleration
-        if(this.keyw) {
+        if(a == 100) {
             a = u < 0 ? this.config.a + this.config.da : this.config.a;
 
-        } else if(this.keys) {
+        } else if(a == -100) {
             a = u > 0? -(this.config.a + this.config.da) : -this.config.a;
 
         } else { // brakes
@@ -303,19 +76,11 @@ var CarView = Backbone.View.extend({
             }
         }
 
-        
-        // angle
-        if( this.keya && u != 0) {
-            q = u < 0 ? q + 0.1 : q - 0.1;
-
-        } else if( this.keyd && u != 0) {
-            q = u < 0 ? q - 0.1 : q + 0.1;
-        }
 
         var d = u * t + (a * Math.pow(t, 2))/2;          
         var v = u + a * t;
     
-        var ang = q % 6.28;
+        var ang = q % (2 * Math.PI);
 
         u = v > this.config.vmax ? this.config.vmax : v;
     
@@ -331,66 +96,112 @@ var CarView = Backbone.View.extend({
             angle = ang;
 
         this.model.set({
+            a : a,
             u : u,
             currPosition : currPos,
             direction : angle
         });
 
-        this.render();
+    },
+    
 
-        if(this.model.master)
-            this.model.save();
-        
+    draw : function(context) {
+        var carImage = document.getElementById("red-car-image");// $("#red-car-image").clone()[0];
+        var currPos = this.model.get("currPosition");
+        var angle = this.model.get("direction");
+
+        var sourceX = currPos.x;
+        var sourceY = currPos.y;
+        // var sourceWidth = 60;
+        // var sourceHeight = 30;
+        // var destWidth = sourceWidth;
+        // var destHeight = sourceHeight;
+        // var destX = -30;
+        // var destY = -15;
+        context.rotate(angle);
+        context.drawImage(carImage, sourceX, sourceY); //, sourceWidth, sourceHeight, destX, destY, destWidth, destHeight);
     },
 
 
-    fireTorpedo : function() {
+    keyDown_37 : function () {
+        this.model.set({direction : this.model.get("direction") - 0.1 });
+    },
+        
+    keyDown_39 : function () {
+        this.model.set({direction : this.model.get("direction") + 0.1 });
+    },
+        
+    keyHeld_37 : function () {
+        this.model.set({direction : this.model.get("direction") - 0.1 });
+    },
+        
+    keyHeld_39 : function () {
+        this.model.set({direction : this.model.get("direction") + 0.1 });
+    },
+        
+    keyDown_38 : function () {
+        this.model.set({a : 100});
+    },
 
-        var d = parseFloat(this.model.get('direction'));
-        var currPos = this.model.get("currPosition");
-        var c = {
-            x : parseFloat(currPos.x),
-            y : parseFloat(currPos.y)
-        };
+    keyUp_38 : function () {
+        this.model.set({a : 0});
+    },
 
-        this.torpedos.create({
-            direction : d,
-            currPosition : c
-        });
+    keyDown_40 : function () {
+        this.model.set({a : -100});
+    },
+
+    keyUp_40 : function () {
+        this.model.set({a : 0});
+    },
+        
+    keyDown_32 : function () {
+        //fire bullet
+        //gs.addEntity(new Bullet(this.x + 12 * Math.sin(this.angle), this.y - 12 * Math.cos(this.angle), this.angle, this.speed, true));
+    },
+
+    keyDown : function (keyCode) {
+        console.log(keyCode);
     }
     
 });
 
 
 
+function World(gs) {
+    this.draw = function(context) {
+        gs.clear();
+        gs.background('rgba(100, 100, 100, 1.0)');
+    }
+}
+
+
+
+
 $(function() {
+
+    var surface = document.getElementById("container");
+    gs = new JSGameSoup(surface, 30);
+
+    gs.addEntity(new World(gs));
+
+
+
+
 
     Game = {};
 
-    Game.stage = new Kinetic.Stage("container", 800, 600);
-
-    Game.board = new Kinetic.Layer();
-
-    var rectangle = new Kinetic.Shape(function(){
-        var context = this.getContext();
-        context.fillStyle="#cecece";
-        context.fillRect(0,0, 800, 600);
-    });
-
-    Game.board.add(rectangle);
-
-    Game.stage.add(Game.board);
-
     Game.allCars = new Cars();
 
-    Game.allCars.create({
+    var car = Game.allCars.create({
         u : 0,
         direction : 0,
         master : true,
         currPosition : {
-            x : Math.round(Math.random()*100), 
-            y : Math.round(Math.random()*100)
+            x : gs.random(10, 100),
+            y : gs.random(10, 100)
         }
     });
 
+    gs.launch();
 });

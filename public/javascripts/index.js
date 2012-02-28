@@ -6,10 +6,21 @@ var Car = Backbone.Model.extend({
         if(args.master){
             this.master = true;
             this.set({master : false});
+            // override set method to reject updates from backend/ accept updates only from update method
+            this.oldSet = this.set;
+            this.set = this.newSet;
         }
 
         this.view = new CarView({model : this});
+    },
+
+
+    // local is true in case of local upadate ie not from backend
+    newSet : function(attrs, options) {
+        if(options && options.local)
+            this.oldSet(attrs);
     }
+
     
 });
 
@@ -29,6 +40,13 @@ var Cars = Backbone.Collection.extend({
         this.bindBackend();
 
         this.bind('backend:update', this.addExistingCar, this);
+    },
+
+
+    addExistingCar : function(model) {
+        if(!this.get(model.id)){
+            this.add(model);
+        }
     }
 
 });
@@ -51,6 +69,8 @@ var CarView = Backbone.View.extend({
     initialize: function(args) {
         gs.addEntity(this);
         Game.allCarViews.push(this);
+        
+        this.carSprite = $("#" + args.model.get("team") + "-plane-image").clone()[0];
     },
     
 
@@ -102,7 +122,13 @@ var CarView = Backbone.View.extend({
             u : u,
             currPosition : currPos,
             direction : angle
+        }, 
+        { 
+            local : true
         });
+
+        if(this.model.master)
+            this.model.save();
 
     },
     
@@ -110,9 +136,6 @@ var CarView = Backbone.View.extend({
     draw : function(context) {
         var currPos = this.model.get("currPosition");
         var angle = this.model.get("direction");
-        var team = this.model.get("team");
-
-        var carImage = document.getElementById(team + "-plane-image");// $("#red-car-image").clone()[0];
 
 
         var sourceX = 48 * Math.round(angle * 10);
@@ -124,7 +147,7 @@ var CarView = Backbone.View.extend({
         var destX = currPos.x;
         var destY = currPos.y;
 
-        context.drawImage(carImage, sourceX, sourceY, sourceWidth, sourceHeight, destX, destY, destWidth, destHeight);
+        context.drawImage(this.carSprite, sourceX, sourceY, sourceWidth, sourceHeight, destX, destY, destWidth, destHeight);
     },
 
 
@@ -138,45 +161,41 @@ var CarView = Backbone.View.extend({
     },
 
 
-    keyDown_37 : function () {
-        this.model.set({direction : this.model.get("direction") - 0.1 });
-    },
+    // keyDown_37 : function () {
+    //     this.model.set({direction : this.model.get("direction") - 0.1 });
+    // },
         
-    keyDown_39 : function () {
-        this.model.set({direction : this.model.get("direction") + 0.1 });
-    },
+    // keyDown_39 : function () {
+    //     this.model.set({direction : this.model.get("direction") + 0.1 });
+    // },
         
     keyHeld_37 : function () {
-        this.model.set({direction : this.model.get("direction") - 0.1 });
+        this.model.set({direction : this.model.get("direction") - 0.1 }, {local : true});
     },
         
     keyHeld_39 : function () {
-        this.model.set({direction : this.model.get("direction") + 0.1 });
+        this.model.set({direction : this.model.get("direction") + 0.1 }, {local : true});
     },
         
     keyDown_38 : function () {
-        this.model.set({a : 100});
+        this.model.set({a : 100}, {local : true});
     },
 
     keyUp_38 : function () {
-        this.model.set({a : 0});
+        this.model.set({a : 0}, {local : true});
     },
 
     keyDown_40 : function () {
-        this.model.set({a : -100});
+        this.model.set({a : -100}, {local : true});
     },
 
     keyUp_40 : function () {
-        this.model.set({a : 0});
+        this.model.set({a : 0}, {local : true});
     },
         
     keyDown_32 : function () {
         //fire bullet
         //gs.addEntity(new Bullet(this.x + 12 * Math.sin(this.angle), this.y - 12 * Math.cos(this.angle), this.angle, this.speed, true));
-    },
-
-    keyDown : function (keyCode) {
-        console.log(keyCode);
     }
     
 });
@@ -213,28 +232,19 @@ $(function() {
 
     Game.allCarViews = [];
 
-    car1 = Game.allCars.create({
-        u : 0,
-        direction : 0,
-        master : true,
-        team : "red",
-        currPosition : {
-            x : gs.random(10, 100),
-            y : gs.random(10, 100)
-        }
-    });
 
 
-    car2 = Game.allCars.create({
-        u : 0,
-        direction : Math.PI,
-        master : false,
-        team : "blue",
-        currPosition : {
-            x : gs.random(300, 100),
-            y : gs.random(10, 100)
-        }
-    });
+
+    // car2 = Game.allCars.create({
+    //     u : 0,
+    //     direction : Math.PI,
+    //     master : false,
+    //     team : "blue",
+    //     currPosition : {
+    //         x : gs.random(300, 100),
+    //         y : gs.random(10, 100)
+    //     }
+    // });
 
 
     gs.launch();

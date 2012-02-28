@@ -33,10 +33,10 @@ app.listen(3000);
 var cars = backboneio.createBackend();
 cars.use(backboneio.middleware.memoryStore());
 
-var torpedos = backboneio.createBackend();
-torpedos.use(backboneio.middleware.memoryStore());
+var bullets = backboneio.createBackend();
+bullets.use(backboneio.middleware.memoryStore());
 
 
-backboneio.listen(app, { cars: cars, torpedos : torpedos });
+backboneio.listen(app, { cars: cars, bullets : bullets });
 
 console.log("Express server listening on port %d in %s mode", app.address().port, app.settings.env);

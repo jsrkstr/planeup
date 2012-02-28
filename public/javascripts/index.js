@@ -1,4 +1,34 @@
-var Car = Backbone.Model.extend({
+Game = {
+
+    model : {},
+
+    view : {},
+
+    collection : {},
+
+    mixin : {},
+
+    allEntities : [],
+
+    allCars : null,
+
+    addEntity : function(entity){
+        gs.addEntity(entity);
+        this.allEntities.push(entity);
+    },
+
+    delEntity : function(entityModel) {
+        gs.delEntity(entityModel.view);
+        this.allEntites = _.reject(this.allEntities, function(entity){
+            return entity.cid == entityModel.view.cid;
+        });
+    }
+};
+
+
+
+
+Game.model.Car = Backbone.Model.extend({
     
     initialize: function(args) {
         this.master = false;
@@ -11,7 +41,7 @@ var Car = Backbone.Model.extend({
             this.set = this.newSet;
         }
 
-        this.view = new CarView({model : this});
+        this.view = new Game.view.CarView({model : this});
     },
 
 
@@ -27,13 +57,40 @@ var Car = Backbone.Model.extend({
 
 
 
-var Cars = Backbone.Collection.extend({
+Game.model.Bullet = Backbone.Model.extend({
+    
+    initialize: function(args) {
+        this.view = new Game.view.BulletView({model : this});
+    }
+
+});
+
+
+
+
+
+Game.collection.Bullets = Backbone.Collection.extend({
+
+    
+    // Specify the backend with which to sync
+    backend: 'bullets',
+
+    model: Game.model.Bullet
+
+});
+
+
+
+
+
+
+Game.collection.Cars = Backbone.Collection.extend({
 
     
     // Specify the backend with which to sync
     backend: 'cars',
 
-    model: Car,
+    model: Game.model.Car,
 
     initialize: function() {
         // Setup default backend bindings
@@ -55,22 +112,107 @@ var Cars = Backbone.Collection.extend({
 
 
 
-var CarView = Backbone.View.extend({
+
+
+
+
+// TODO  : should not create objs for each bullet instead used fixed no. say 5 and use them again.
+Game.view.BulletView = Backbone.View.extend({
+
+    type : "bullet",
+
+    config : {
+        radius : 3,
+        t : 0.1,
+        da : 5,
+        u : 50,
+        damage : 10,
+        ttl : 1500
+    },
+
+
+    initialize: function(args) {
+        Game.addEntity(this);
+        this.model.set({ u : this.model.get("u") + this.config.u});// relative vel of bullet
+        this.time = Date.now();
+    },
+    
+
+    update : function() {
+        var t = this.config.t, 
+        u = this.model.get("u"),
+        q = this.model.get("q"),
+        currPos = this.model.get("pos");
+
+        var a = u > 0 ? -this.config.da : this.config.da;
+
+        console.log(u);
+
+        var d = u * t + (a * Math.pow(t, 2))/2;
+        var v = u + a * t;
+
+        var dx = Math.round(d * Math.cos(q));
+        var dy = Math.round(d * Math.sin(q));
+
+        currPos.x += dx;
+        currPos.y += dy;
+
+        this.model.set({
+           u :  v,
+           pos : currPos
+        });
+
+
+        if(Date.now() - this.time > this.config.ttl){
+            Game.delEntity(this.model);
+        }
+    },
+
+
+    draw : function(context){
+        var pos = this.model.get("pos");
+        context.fillStyle = "#222";
+        context.beginPath();
+        context.arc(pos.x, pos.y, this.config.radius, 0, Math.PI * 2, true);
+        context.fill();      
+    },
+
+    get_collision_circle : function() {
+        var currPos = this.model.get("pos");
+        return [[currPos.x, currPos.y], this.config.radius];
+    },
+    
+    collide_circle : function(who) {
+      console.log("Die die die!!!", this.cid, who.type);
+    }
+
+});
+
+
+
+
+
+Game.view.CarView = Backbone.View.extend({
 
     radius : 10,
 
     config : {
         vmax : 100,
         a : 100,
-        da : 30
+        da : 20
     },
 
 
     initialize: function(args) {
-        gs.addEntity(this);
-        Game.allCarViews.push(this);
+        Game.addEntity(this);
+
+        // make car user controlled
+        if(this.model.master)
+            _.extend(this, Game.mixin.RemoteControlled);
         
         this.carSprite = $("#" + args.model.get("team") + "-plane-image").clone()[0];
+
+        this.bullets = new Game.collection.Bullets();
     },
     
 
@@ -158,17 +300,30 @@ var CarView = Backbone.View.extend({
     
     collide_circle : function(who) {
       console.log("collision!!");
-    },
+    }
+    
+});
 
 
-    // keyDown_37 : function () {
-    //     this.model.set({direction : this.model.get("direction") - 0.1 });
-    // },
-        
-    // keyDown_39 : function () {
-    //     this.model.set({direction : this.model.get("direction") + 0.1 });
-    // },
-        
+
+Game.view.World = function(gs) {
+
+    this.update = function(){
+        collide.circles(Game.allEntities, Game.allEntities);
+    };
+
+    this.draw = function(context) {
+        gs.clear();
+        gs.background('rgba(100, 100, 100, 1.0)');
+    };
+};
+
+
+
+
+
+Game.mixin.RemoteControlled = {
+
     keyHeld_37 : function () {
         this.model.set({direction : this.model.get("direction") - 0.1 }, {local : true});
     },
@@ -195,24 +350,22 @@ var CarView = Backbone.View.extend({
         
     keyDown_32 : function () {
         //fire bullet
-        //gs.addEntity(new Bullet(this.x + 12 * Math.sin(this.angle), this.y - 12 * Math.cos(this.angle), this.angle, this.speed, true));
-    }
-    
-});
+        var q = parseFloat(this.model.get('direction'));
+        var currPos = this.model.get("currPosition");
+        var u = parseFloat(this.model.get("u"));
 
+        var c = {
+            x : parseFloat(currPos.x),
+            y : parseFloat(currPos.y)
+        };
 
-
-function World(gs) {
-
-    this.update = function(){
-        collide.circles(Game.allCarViews, Game.allCarViews);
-    };
-
-    this.draw = function(context) {
-        gs.clear();
-        gs.background('rgba(100, 100, 100, 1.0)');
-    };
-}
+        this.bullets.create({
+            u : u,
+            q : q,
+            pos : c
+        });
+    }    
+};
 
 
 
@@ -222,15 +375,9 @@ $(function() {
     var surface = document.getElementById("container");
     gs = new JSGameSoup(surface, 30);
 
-    gs.addEntity(new World(gs));
+    gs.addEntity(new Game.view.World(gs));
 
-
-
-    Game = {};
-
-    Game.allCars = new Cars();
-
-    Game.allCarViews = [];
+    Game.allCars = new Game.collection.Cars();
 
 
 

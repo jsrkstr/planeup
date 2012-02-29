@@ -19,9 +19,13 @@ Game = {
 
     delEntity : function(entityModel) {
         gs.delEntity(entityModel.view);
-        this.allEntites = _.reject(this.allEntities, function(entity){
-            return entity.cid == entityModel.view.cid;
-        });
+
+        for(var i = this.allEntities.length-1; i >= 0; i--){
+            if(this.allEntities[i].cid == entityModel.view.cid){
+                this.allEntities.remove(this.allEntities[i]);
+                break;
+            }
+        }
     }
 };
 
@@ -29,6 +33,11 @@ Game = {
 
 
 Game.model.Car = Backbone.Model.extend({
+
+
+    defaults : {
+        health : 100
+    },
     
     initialize: function(args) {
         this.master = false;
@@ -58,6 +67,10 @@ Game.model.Car = Backbone.Model.extend({
 
 
 Game.model.Bullet = Backbone.Model.extend({
+
+    config : {
+        damage : 10
+    },
     
     initialize: function(args) {
         this.view = new Game.view.BulletView({model : this});
@@ -75,7 +88,12 @@ Game.collection.Bullets = Backbone.Collection.extend({
     // Specify the backend with which to sync
     backend: 'bullets',
 
-    model: Game.model.Bullet
+    model: Game.model.Bullet,
+
+    initialize: function() {
+        // Setup default backend bindings
+        this.bindBackend();
+    }
 
 });
 
@@ -126,7 +144,6 @@ Game.view.BulletView = Backbone.View.extend({
         t : 0.1,
         da : 5,
         u : 50,
-        damage : 10,
         ttl : 1500
     },
 
@@ -145,8 +162,6 @@ Game.view.BulletView = Backbone.View.extend({
         currPos = this.model.get("pos");
 
         var a = u > 0 ? -this.config.da : this.config.da;
-
-        console.log(u);
 
         var d = u * t + (a * Math.pow(t, 2))/2;
         var v = u + a * t;
@@ -183,7 +198,7 @@ Game.view.BulletView = Backbone.View.extend({
     },
     
     collide_circle : function(who) {
-      console.log("Die die die!!!", this.cid, who.type);
+      Game.delEntity(this.model);
     }
 
 });
@@ -195,6 +210,8 @@ Game.view.BulletView = Backbone.View.extend({
 Game.view.CarView = Backbone.View.extend({
 
     radius : 10,
+
+    type : "plane",
 
     config : {
         vmax : 100,
@@ -268,9 +285,14 @@ Game.view.CarView = Backbone.View.extend({
         { 
             local : true
         });
+            
 
         if(this.model.master)
             this.model.save();
+
+        if(this.model.get("health") < 0)
+        console.log("dead");
+            //Game.delEntity(this.model);
 
     },
     
@@ -286,8 +308,8 @@ Game.view.CarView = Backbone.View.extend({
         var sourceHeight = 48;
         var destWidth = sourceWidth;
         var destHeight = sourceHeight;
-        var destX = currPos.x;
-        var destY = currPos.y;
+        var destX = currPos.x - 24;
+        var destY = currPos.y - 24;
 
         context.drawImage(this.carSprite, sourceX, sourceY, sourceWidth, sourceHeight, destX, destY, destWidth, destHeight);
     },
@@ -299,7 +321,11 @@ Game.view.CarView = Backbone.View.extend({
     },
     
     collide_circle : function(who) {
-      console.log("collision!!");
+      switch(who.type){
+          case "bullet" : console.log("collided");
+            this.model.set({health : this.model.get("health") - who.model.config.damage}, {local : true});
+          break;
+      }
     }
     
 });
@@ -355,8 +381,8 @@ Game.mixin.RemoteControlled = {
         var u = parseFloat(this.model.get("u"));
 
         var c = {
-            x : parseFloat(currPos.x),
-            y : parseFloat(currPos.y)
+            x : parseFloat(currPos.x) + (20 * Math.cos(q)),
+            y : parseFloat(currPos.y) + (20 * Math.sin(q))
         };
 
         this.bullets.create({

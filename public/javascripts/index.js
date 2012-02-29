@@ -227,7 +227,7 @@ Game.view.CarView = Backbone.View.extend({
         if(this.model.master)
             _.extend(this, Game.mixin.RemoteControlled);
         
-        this.carSprite = $("#" + args.model.get("team") + "-plane-image").clone()[0];
+        this.sprite = $("#" + args.model.get("team") + "-plane-image").clone()[0];
 
         this.bullets = new Game.collection.Bullets();
     },
@@ -290,10 +290,18 @@ Game.view.CarView = Backbone.View.extend({
         if(this.model.master)
             this.model.save();
 
-        if(this.model.get("health") < 0)
-        console.log("dead");
+        if(this.model.get("health") == 50){
+            this.setWreckState();
+            //console.log("dead");
+        }
             //Game.delEntity(this.model);
 
+    },
+
+
+    setWreckState : function() {
+        this.sprite = $("#" + this.model.get("team") + "-wreck-plane-image").clone()[0];
+        this.setWreckState = function(){};
     },
     
 
@@ -311,7 +319,7 @@ Game.view.CarView = Backbone.View.extend({
         var destX = currPos.x - 24;
         var destY = currPos.y - 24;
 
-        context.drawImage(this.carSprite, sourceX, sourceY, sourceWidth, sourceHeight, destX, destY, destWidth, destHeight);
+        context.drawImage(this.sprite, sourceX, sourceY, sourceWidth, sourceHeight, destX, destY, destWidth, destHeight);
     },
 
 

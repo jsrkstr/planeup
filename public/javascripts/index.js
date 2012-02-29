@@ -12,11 +12,13 @@ Game = {
 
     allCars : null,
 
+    // accepts backbone view
     addEntity : function(entity){
         gs.addEntity(entity);
         this.allEntities.push(entity);
     },
 
+    // accepts backbone model
     delEntity : function(entityModel) {
         gs.delEntity(entityModel.view);
 
@@ -93,6 +95,9 @@ Game.collection.Bullets = Backbone.Collection.extend({
     initialize: function() {
         // Setup default backend bindings
         this.bindBackend();
+        this.bind('backend:create', function(){
+            console.log("created");
+        });
     }
 
 });
@@ -216,7 +221,7 @@ Game.view.CarView = Backbone.View.extend({
     config : {
         vmax : 100,
         a : 100,
-        da : 20
+        da : 20,
     },
 
 
@@ -230,6 +235,9 @@ Game.view.CarView = Backbone.View.extend({
         this.sprite = $("#" + args.model.get("team") + "-plane-image").clone()[0];
 
         this.bullets = new Game.collection.Bullets();
+
+        this.smokeInterval = 6;
+        this.smokeStep = 1;
     },
     
 
@@ -301,25 +309,43 @@ Game.view.CarView = Backbone.View.extend({
 
     setWreckState : function() {
         this.sprite = $("#" + this.model.get("team") + "-wreck-plane-image").clone()[0];
+        this.smokeInterval = this.model.get("health") > 50 ? 6 : 4; // shorter for black smoke
         this.setWreckState = function(){};
     },
     
 
     draw : function(context) {
-        var currPos = this.model.get("currPosition");
-        var angle = this.model.get("direction");
+        var attrs = this.model.toJSON();
 
-
-        var sourceX = 48 * Math.round(angle * 10);
+        var sourceX = 48 * Math.round(attrs.direction * 10);
         var sourceY = 0;
         var sourceWidth = 48;
         var sourceHeight = 48;
         var destWidth = sourceWidth;
         var destHeight = sourceHeight;
-        var destX = currPos.x - 24;
-        var destY = currPos.y - 24;
+        var destX = attrs.currPosition.x - 24;
+        var destY = attrs.currPosition.y - 24;
 
         context.drawImage(this.sprite, sourceX, sourceY, sourceWidth, sourceHeight, destX, destY, destWidth, destHeight);
+
+        var smokeColor  = attrs.health > 50 ? "white" : "black";
+
+        if(this.smokeStep == this.smokeInterval){
+            
+            if(Math.abs(attrs.u) > 5){
+                new Game.model.Smoke({ 
+                    color : smokeColor,
+                    pos : {
+                        x : attrs.currPosition.x,
+                        y : attrs.currPosition.y
+                    }
+                });
+            }
+
+            this.smokeStep = 1;
+        } else {
+            this.smokeStep++;
+        }
     },
 
 
@@ -353,6 +379,54 @@ Game.view.World = function(gs) {
 };
 
 
+
+
+Game.model.Smoke = Backbone.Model.extend({
+   initialize : function(){
+       this.view = new Game.view.SmokeView({model : this});
+   } 
+});
+
+
+Game.view.SmokeView = Backbone.View.extend({
+
+    sourceX : 0,
+
+    spriteLength : {
+        "black" : 256,
+        "white" : 512
+    },
+
+    initialize : function() {
+        this.sprite = $("#"+ this.model.get("color") +"-smoke-image").clone()[0];
+        Game.addEntity(this);
+    },
+
+    
+    update : function() {
+        this.sourceX += 16;
+        if(this.sourceX == this.sprite[this.model.get("color")] )
+            Game.delEntity(this.model);
+    },
+
+
+    draw : function(context){
+        var pos = this.model.get("pos");
+
+        var sourceX = this.sourceX;
+        var sourceY = 0;
+
+        var sourceWidth = 16;
+        var sourceHeight = 16;
+        var destWidth = sourceWidth;
+        var destHeight = sourceHeight;
+        var destX = pos.x;
+        var destY = pos.y;
+
+        context.drawImage(this.sprite, sourceX, sourceY, sourceWidth, sourceHeight, destX, destY, destWidth, destHeight);      
+    }
+
+});
 
 
 

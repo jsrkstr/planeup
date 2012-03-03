@@ -95,9 +95,14 @@ Game.collection.Bullets = Backbone.Collection.extend({
     initialize: function() {
         // Setup default backend bindings
         this.bindBackend();
-        this.bind('backend:create', function(){
-            console.log("created");
-        });
+        
+        this.bind('backend:update', this.addExistingBullet, this);
+    },
+
+    addExistingBullet : function(model) {
+        if(!this.get(model.id)){
+            this.add(model);
+        }
     }
 
 });
@@ -232,9 +237,7 @@ Game.view.CarView = Backbone.View.extend({
         if(this.model.master)
             _.extend(this, Game.mixin.RemoteControlled);
         
-        this.sprite = $("#" + args.model.get("team") + "-plane-image").clone()[0];
-
-        this.bullets = new Game.collection.Bullets();
+        this.sprite = $("#" + args.model.get("team") + "-plane-image")[0];
 
         this.smokeInterval = 6;
         this.smokeStep = 1;
@@ -308,7 +311,7 @@ Game.view.CarView = Backbone.View.extend({
 
 
     setWreckState : function() {
-        this.sprite = $("#" + this.model.get("team") + "-wreck-plane-image").clone()[0];
+        this.sprite = $("#" + this.model.get("team") + "-wreck-plane-image")[0];
         this.smokeInterval = this.model.get("health") > 50 ? 6 : 4; // shorter for black smoke
         this.setWreckState = function(){};
     },
@@ -398,7 +401,7 @@ Game.view.SmokeView = Backbone.View.extend({
     },
 
     initialize : function() {
-        this.sprite = $("#"+ this.model.get("color") +"-smoke-image").clone()[0];
+        this.sprite = $("#"+ this.model.get("color") +"-smoke-image")[0];
         Game.addEntity(this);
     },
 
@@ -467,7 +470,8 @@ Game.mixin.RemoteControlled = {
             y : parseFloat(currPos.y) + (20 * Math.sin(q))
         };
 
-        this.bullets.create({
+        Game.bullets.create({
+            id : Date.now(),
             u : u,
             q : q,
             pos : c
@@ -487,10 +491,13 @@ $(function() {
 
     Game.allCars = new Game.collection.Cars();
 
+    Game.bullets = new Game.collection.Bullets();
+
 
 
 
     // car2 = Game.allCars.create({
+    //     id : 1,
     //     u : 0,
     //     direction : Math.PI,
     //     master : false,

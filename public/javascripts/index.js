@@ -8,6 +8,8 @@ Game = {
 
     mixin : {},
 
+    worker : {},
+
     allEntities : [],
 
     allCars : null,
@@ -30,6 +32,56 @@ Game = {
         }
     }
 };
+
+
+
+Game.worker.carUpdate = worker(function update(a, u, q, currPos, config) {
+    var t = 0.1;
+
+    // acceleration
+    if(a == 100) {
+        a = u < 0 ? config.a + config.da : config.a;
+
+    } else if(a == -100) {
+        a = u > 0? -(config.a + config.da) : -config.a;
+
+    } else { // brakes
+
+        if(u > 0) {
+            a = -config.da;
+        } else if(u < 0) {
+            a = config.da;
+        }
+    }
+
+
+    var d = u * t + (a * Math.pow(t, 2))/2;          
+    var v = u + a * t;
+
+    var ang = q % (2 * Math.PI);
+
+    u = v > config.vmax ? config.vmax : v;
+
+    var dx = Math.round(d * Math.cos(q));
+    var dy = Math.round(d * Math.sin(q));
+
+    currPos.x += dx;
+    currPos.y += dy;
+
+    if(ang < 0)
+        angle = 6.28 + ang;
+    else 
+        angle = ang;
+        
+    var data = {
+        a : a,
+        u : u,
+        currPos : currPos,
+        angle : angle
+    };
+
+    return data;
+});
 
 
 
@@ -223,6 +275,8 @@ Game.view.CarView = Backbone.View.extend({
 
     type : "plane",
 
+    tail : [], // list of smoke clouds
+
     config : {
         vmax : 100,
         a : 100,
@@ -241,57 +295,34 @@ Game.view.CarView = Backbone.View.extend({
 
         this.smokeInterval = 6;
         this.smokeStep = 1;
+        this.smokeIndex = 0;
+
+        // add some clouds
+        for(var i = 0; i < 5; i++){
+            this.tail.push(new Game.model.Smoke());
+        }
     },
     
 
     update : function() {
 
-        var t = 0.1, 
-        a = this.model.get("a") || 0,
+        var a = this.model.a || 0,
         u = this.model.get("u"),
-        q = this.model.get("direction"),
+        q = this.model.direction || this.model.get("direction"),
         currPos = this.model.get("currPosition");
 
-        // acceleration
-        if(a == 100) {
-            a = u < 0 ? this.config.a + this.config.da : this.config.a;
+        Game.worker.carUpdate(a, u, q, currPos, this.config).on("data", $.proxy(this.onUpdated, this));
 
-        } else if(a == -100) {
-            a = u > 0? -(this.config.a + this.config.da) : -this.config.a;
-
-        } else { // brakes
-
-            if(u > 0) {
-                a = -this.config.da;
-            } else if(u < 0) {
-                a = this.config.da;
-            }
-        }
+    },
 
 
-        var d = u * t + (a * Math.pow(t, 2))/2;          
-        var v = u + a * t;
-    
-        var ang = q % (2 * Math.PI);
-
-        u = v > this.config.vmax ? this.config.vmax : v;
-    
-        var dx = Math.round(d * Math.cos(q));
-        var dy = Math.round(d * Math.sin(q));
-
-        currPos.x += dx;
-        currPos.y += dy;
-
-        if(ang < 0)
-            angle = 6.28 + ang;
-        else 
-            angle = ang;
+    onUpdated : function(data){
 
         this.model.set({
-            a : a,
-            u : u,
-            currPosition : currPos,
-            direction : angle
+            a : data.a,
+            u : data.u,
+            currPosition : data.currPos,
+            direction : data.angle
         }, 
         { 
             local : true
@@ -305,8 +336,7 @@ Game.view.CarView = Backbone.View.extend({
             this.setWreckState();
             //console.log("dead");
         }
-            //Game.delEntity(this.model);
-
+            //Game.delEntity(this.model);    
     },
 
 
@@ -336,13 +366,19 @@ Game.view.CarView = Backbone.View.extend({
         if(this.smokeStep == this.smokeInterval){
             
             if(Math.abs(attrs.u) > 5){
-                new Game.model.Smoke({ 
+                var cloud = this.tail[this.smokeIndex];
+                cloud.set({ 
                     color : smokeColor,
                     pos : {
                         x : attrs.currPosition.x,
                         y : attrs.currPosition.y
                     }
                 });
+
+                if(this.smokeIndex == 4)
+                    this.smokeIndex = 0;
+                else 
+                    this.smokeIndex++;
             }
 
             this.smokeStep = 1;
@@ -393,23 +429,28 @@ Game.model.Smoke = Backbone.Model.extend({
 
 Game.view.SmokeView = Backbone.View.extend({
 
-    sourceX : 0,
-
     spriteLength : {
         "black" : 256,
         "white" : 512
     },
 
     initialize : function() {
+        this.model.bind("change", this.render, this);
+    },
+
+
+    render : function(){
+        this.sourceX = 0;
         this.sprite = $("#"+ this.model.get("color") +"-smoke-image")[0];
-        Game.addEntity(this);
+        Game.addEntity(this);  
     },
 
     
     update : function() {
         this.sourceX += 16;
-        if(this.sourceX == this.sprite[this.model.get("color")] )
+        if(this.sourceX == this.spriteLength[this.model.get("color")] ){
             Game.delEntity(this.model);
+        }
     },
 
 
@@ -436,27 +477,27 @@ Game.view.SmokeView = Backbone.View.extend({
 Game.mixin.RemoteControlled = {
 
     keyHeld_37 : function () {
-        this.model.set({direction : this.model.get("direction") - 0.1 }, {local : true});
+        this.model.direction = this.model.get("direction") - 0.1;
     },
         
     keyHeld_39 : function () {
-        this.model.set({direction : this.model.get("direction") + 0.1 }, {local : true});
+        this.model.direction = this.model.get("direction") + 0.1;
     },
         
     keyDown_38 : function () {
-        this.model.set({a : 100}, {local : true});
+        this.model.a = 100;
     },
 
     keyUp_38 : function () {
-        this.model.set({a : 0}, {local : true});
+        this.model.a  = 0;
     },
 
     keyDown_40 : function () {
-        this.model.set({a : -100}, {local : true});
+        this.model.a = -100;
     },
 
     keyUp_40 : function () {
-        this.model.set({a : 0}, {local : true});
+        this.model.a = 0;
     },
         
     keyDown_32 : function () {
@@ -492,7 +533,6 @@ $(function() {
     Game.allCars = new Game.collection.Cars();
 
     Game.bullets = new Game.collection.Bullets();
-
 
 
 

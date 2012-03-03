@@ -86,6 +86,32 @@ Game.worker.carUpdate = worker(function update(a, u, q, currPos, config) {
 
 
 
+Game.worker.bulletUpdate = worker(function update(u, q, currPos, config) {
+
+    var t = config.t;
+
+    var a = u > 0 ? -config.da : config.da;
+
+    var d = u * t + (a * Math.pow(t, 2))/2;
+    var v = u + a * t;
+
+    var dx = Math.round(d * Math.cos(q));
+    var dy = Math.round(d * Math.sin(q));
+
+    currPos.x += dx;
+    currPos.y += dy;
+        
+    var data = {
+        v : v,
+        currPos : currPos,
+    };
+
+    return data;
+});
+
+
+
+
 Game.model.Car = Backbone.Model.extend({
 
 
@@ -217,32 +243,28 @@ Game.view.BulletView = Backbone.View.extend({
     },
     
 
-    update : function() {
-        var t = this.config.t, 
-        u = this.model.get("u"),
+    update : function() { 
+        var u = this.model.get("u"),
         q = this.model.get("q"),
         currPos = this.model.get("pos");
 
-        var a = u > 0 ? -this.config.da : this.config.da;
+        Game.worker.bulletUpdate(u, q, currPos, this.config).on("data", $.proxy(this.onUpdated, this));
 
-        var d = u * t + (a * Math.pow(t, 2))/2;
-        var v = u + a * t;
+    },
 
-        var dx = Math.round(d * Math.cos(q));
-        var dy = Math.round(d * Math.sin(q));
 
-        currPos.x += dx;
-        currPos.y += dy;
+    onUpdated : function(data){
 
         this.model.set({
-           u :  v,
-           pos : currPos
+           u :  data.v,
+           pos : data.currPos
         });
 
 
         if(Date.now() - this.time > this.config.ttl){
             Game.delEntity(this.model);
         }
+
     },
 
 

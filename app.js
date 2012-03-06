@@ -30,13 +30,13 @@ app.configure('production', function(){
 app.listen(3000);
 
 
-var cars = backboneio.createBackend();
-cars.use(backboneio.middleware.memoryStore());
+var planes = backboneio.createBackend();
+planes.use(backboneio.middleware.memoryStore());
 
 var bullets = backboneio.createBackend();
 bullets.use(backboneio.middleware.memoryStore());
 
 
-backboneio.listen(app, { cars: cars, bullets : bullets });
+backboneio.listen(app, { planes : planes, bullets : bullets });
 
 console.log("Express server listening on port %d in %s mode", app.address().port, app.settings.env);

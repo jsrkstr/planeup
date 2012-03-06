@@ -313,7 +313,10 @@ Game.view.CarView = Backbone.View.extend({
         if(this.model.master)
             _.extend(this, Game.mixin.RemoteControlled);
         
-        this.sprite = $("#" + args.model.get("team") + "-plane-image")[0];
+        this.sprite = {
+            healthy : $("#" + args.model.get("team") + "-plane-image")[0],
+            dead : $("#" + this.model.get("team") + "-wreck-plane-image")[0]
+        };
 
         this.smokeInterval = 6;
         this.smokeStep = 1;
@@ -323,6 +326,11 @@ Game.view.CarView = Backbone.View.extend({
         for(var i = 0; i < 5; i++){
             this.tail.push(new Game.model.Smoke());
         }
+
+        statemachine(this);
+        this.set_state("healthy");
+
+        this.model.bind("change:health", this.onHealthChanged, this);
     },
     
 
@@ -354,24 +362,47 @@ Game.view.CarView = Backbone.View.extend({
         if(this.model.master)
             this.model.save();
 
-        if(this.model.get("health") == 50){
-            this.setWreckState();
-            //console.log("dead");
-        }
             //Game.delEntity(this.model);    
     },
 
 
-    setWreckState : function() {
-        this.sprite = $("#" + this.model.get("team") + "-wreck-plane-image")[0];
-        this.smokeInterval = this.model.get("health") > 50 ? 6 : 4; // shorter for black smoke
-        this.setWreckState = function(){};
+
+    onHealthChanged : function(){
+        h = this.model.get("health");
+
+        if(h < 50){
+            if(h > 0)
+                this.set_state("injured"); 
+            else
+                this.set_state("dead"); 
+        } else {
+            this.set_state("healthy"); 
+        }
     },
     
 
-    draw : function(context) {
+    healthy_draw : function(context) {
+        this.drawPlane(context, "healthy");
+        this.drawSmoke(context, "white", this.model.get("currPosition"));
+    },
+
+
+    injured_draw : function(context){
+        this.drawPlane(context, "healthy"); 
+        this.drawSmoke(context, "black", this.model.get("currPosition"));
+    },
+
+
+    dead_draw : function(context){
+        this.drawPlane(context, "dead");
+        this.drawSmoke(context, "black", this.model.get("currPosition"));
+    },
+
+
+    drawPlane : function(context, state){
         var attrs = this.model.toJSON();
 
+        var sprite = this.sprite[state];
         var sourceX = 48 * Math.round(attrs.direction * 10);
         var sourceY = 0;
         var sourceWidth = 48;
@@ -379,29 +410,29 @@ Game.view.CarView = Backbone.View.extend({
         var destWidth = sourceWidth;
         var destHeight = sourceHeight;
         var destX = attrs.currPosition.x - 24;
-        var destY = attrs.currPosition.y - 24;
+        var destY = attrs.currPosition.y - 24; 
 
-        context.drawImage(this.sprite, sourceX, sourceY, sourceWidth, sourceHeight, destX, destY, destWidth, destHeight);
+        context.drawImage(sprite, sourceX, sourceY, sourceWidth, sourceHeight, destX, destY, destWidth, destHeight);
+    },
 
-        var smokeColor  = attrs.health > 50 ? "white" : "black";
 
+    drawSmoke : function(context, color, pos){
+            
         if(this.smokeStep == this.smokeInterval){
             
-            if(Math.abs(attrs.u) > 5){
-                var cloud = this.tail[this.smokeIndex];
-                cloud.set({ 
-                    color : smokeColor,
-                    pos : {
-                        x : attrs.currPosition.x,
-                        y : attrs.currPosition.y
-                    }
-                });
+            var cloud = this.tail[this.smokeIndex];
+            cloud.set({ 
+                color : color,
+                pos : {
+                    x : pos.x,
+                    y : pos.y
+                }
+            });
 
-                if(this.smokeIndex == 4)
-                    this.smokeIndex = 0;
-                else 
-                    this.smokeIndex++;
-            }
+            if(this.smokeIndex == 4)
+                this.smokeIndex = 0;
+            else 
+                this.smokeIndex++;
 
             this.smokeStep = 1;
         } else {

@@ -65,19 +65,20 @@ Game.onReady(function(){
 
     Game.bullets = new Game.collection.Bullets();
 
+    var team = Math.random() > 0.5 ? "red" : "blue";
+    var d = team == "red"? 0 : Math.PI;
 
-
-    // plane2 = Game.allAplanes.create({
-    //     id : 1,
-    //     u : 0,
-    //     direction : Math.PI,
-    //     master : false,
-    //     team : "blue",
-    //     currPosition : {
-    //         x : gs.random(300, 100),
-    //         y : gs.random(10, 100)
-    //     }
-    // });
+    Game.allPlanes.create({
+        id : Date.now(),
+        u : 0,
+        direction : d,
+        master : true,
+        team : team,
+        currPosition : {
+            x : gs.random(300, 100),
+            y : gs.random(10, 100)
+        }
+    });
 
 
     gs.launch();

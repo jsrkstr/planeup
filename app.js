@@ -27,7 +27,7 @@ app.configure('production', function(){
   app.use(express.errorHandler());
 });
 
-app.listen(3000);
+app.listen(process.env['app_port'] || 3000);
 
 
 var planes = backboneio.createBackend();

@@ -3,26 +3,66 @@
 	    <script type="text/javascript" src="/javascripts/jquery.js"></script>
 	    <script type="text/javascript" src="/javascripts/underscore.js"></script>
 	    <script type="text/javascript" src="/javascripts/backbone.js"></script>
+
 	    <script type="text/javascript" src="/socket.io/socket.io.js"></script>
 	    <script type="text/javascript" src="/socket.io/backbone.io.js"></script>
-	    <script type="text/javascript" src="/javascripts/index.js"></script>
-	    <script type="text/javascript" src="/javascripts/kinetic-v3.7.3.min.js"></script>
+
+	    <script type="text/javascript" src="/javascripts/worker.js"></script>
+
+	    <script type="text/javascript" src="/javascripts/jsgamesoup/jsgamesoup.js"></script>
+	    <script type="text/javascript" src="/javascripts/jsgamesoup/collisions.js"></script>
+	    <script type="text/javascript" src="/javascripts/jsgamesoup/statemachine.js"></script>
+
+		<script type="text/javascript" src="/src/game.js"></script>
+
+	    <script type="text/javascript" src="/src/model/plane.js"></script>
+	    <script type="text/javascript" src="/src/model/smoke.js"></script>
+	    <script type="text/javascript" src="/src/model/bullet.js"></script>
+
+	    <script type="text/javascript" src="/src/collection/planes.js"></script>
+	    <script type="text/javascript" src="/src/collection/bullets.js"></script>
+
+	    <script type="text/javascript" src="/src/view/plane_view.js"></script>
+	    <script type="text/javascript" src="/src/view/smoke_view.js"></script>
+	    <script type="text/javascript" src="/src/view/world_view.js"></script>
+	    <script type="text/javascript" src="/src/view/bullet_view.js"></script>
+
+	    <script type="text/javascript" src="/src/mixin/remote_controlled.js"></script>
+
+		<style>
+			#container {
+				width : 660px;
+				height : 600px;
+				margin-left : auto;
+				margin-right : auto;
+			}
+			body {
+				padding : 0px;
+				margin : 0px;
+			}
+
+			#instructions {
+				position : fixed;
+				top : 20px;
+				left : 20px;
+				font-weight : bold;
+				font-size : 25px;
+			}
+		</style>
+
 	</head>
-	<style>
-		#container {
-			width : 800px;
-			height : 600px;
-			margin-left : auto;
-			margin-right : auto;
-		}
-		body {
-			padding : 0px;
-			margin : 0px;
-		}
-	</style>
 	<body>
+    	<div id="preloaded-images" style="display : none;">
+    		<img src="/images/redplane.png" id="red-plane-image"/>
+    		<img src="/images/blueplane.png" id="blue-plane-image"/>
+    		<img src="/images/redplanewreck.png" id="red-wreck-plane-image"/>
+    		<img src="/images/blueplanewreck.png" id="blue-wreck-plane-image"/>
+    		<img src="/images/whitesmoke.png" id="white-smoke-image"/>
+    		<img src="/images/blacksmoke.png" id="black-smoke-image"/>
+    	</div>
 		<div id="container">
     	</div>
-    	<div id="preloaded-images" style="display : none;"><img src="/images/red-car.png" id="red-car-image"/></div>
+
+    	<div id="instructions">Use arrow keys to move and space to shoot.</div>
 	</body>
 </html>

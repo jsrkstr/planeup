@@ -27,18 +27,18 @@ app.configure('production', function(){
   app.use(express.errorHandler());
 });
 
-var port = process.env.PORT || 3000;
 
-app.listen(port);
-
-
-var cars = backboneio.createBackend();
-cars.use(backboneio.middleware.memoryStore());
-
-var torpedos = backboneio.createBackend();
-torpedos.use(backboneio.middleware.memoryStore());
+app.listen(process.env['app_port'] || 3000);
 
 
-backboneio.listen(app, { cars: cars, torpedos : torpedos });
+
+var planes = backboneio.createBackend();
+planes.use(backboneio.middleware.memoryStore());
+
+var bullets = backboneio.createBackend();
+bullets.use(backboneio.middleware.memoryStore());
+
+
+backboneio.listen(app, { planes : planes, bullets : bullets });
 
 console.log("Express server listening on port %d in %s mode", app.address().port, app.settings.env);

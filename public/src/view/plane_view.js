@@ -94,10 +94,15 @@ Game.view.PlaneView = Backbone.View.extend({
         this.set_state("healthy");
 
         this.model.bind("change:health", this.onHealthChanged, this);
+
+        this.times = Date.now();
     },
     
 
     update : function() {
+
+        // console.log(Date.now() - this.times);
+        // this.times = Date.now();
 
         var a = this.model.a || 0,
         u = this.model.get("u"),
@@ -115,17 +120,32 @@ Game.view.PlaneView = Backbone.View.extend({
             a : data.a,
             u : data.u,
             currPosition : data.currPos,
-            direction : data.angle
+            direction : data.angle,
+            time : Date.now()
         }, 
         { 
             local : true
         });
             
 
-        if(this.model.master)
-            this.model.save();
+        this.sync();
 
             //Game.delEntity(this.model);    
+    },
+
+
+    sync : function(){
+
+        this.tick = this.tick || 0;
+
+        if(this.model.master && this.tick == 2){
+            // console.log(Date.now() - this.times);
+            // this.times = Date.now();
+            this.model.save();
+            this.tick = 0;
+        } else {
+            this.tick++;
+        }
     },
 
 

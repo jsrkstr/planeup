@@ -68,17 +68,17 @@ Game.onReady(function(){
     var team = Math.random() > 0.5 ? "red" : "blue";
     var d = team == "red"? 0 : Math.PI;
 
-    Game.allPlanes.create({
-        id : Date.now(),
-        u : 0,
-        direction : d,
-        master : true,
-        team : team,
-        currPosition : {
-            x : gs.random(300, 100),
-            y : gs.random(10, 100)
-        }
-    });
+    // Game.allPlanes.create({
+    //     id : Date.now(),
+    //     u : 0,
+    //     direction : d,
+    //     master : true,
+    //     team : team,
+    //     currPosition : {
+    //         x : gs.random(300, 100),
+    //         y : gs.random(10, 100)
+    //     }
+    // });
 
 
     gs.launch();

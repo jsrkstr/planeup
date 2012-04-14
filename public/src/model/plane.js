@@ -2,7 +2,11 @@ Game.model.Plane = Backbone.Model.extend({
 
 
     defaults : {
-        health : 100
+        health : 100,
+        capturedActions : {
+            actionUpDown : 0,
+            actionLeftRight : 0
+        }
     },
     
     initialize: function(args) {
@@ -83,7 +87,7 @@ Game.model.Plane = Backbone.Model.extend({
         if(this.is_captured != true)
             return false;
 
-        var timeRemaining = 500 - (Date.now() - this.get("captureTimestamp") );
+        var timeRemaining = 400 - (Date.now() - this.get("captureTimestamp") );
 
         window.setTimeout(
             $.proxy(function() {

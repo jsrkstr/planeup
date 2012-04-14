@@ -106,7 +106,7 @@ Game.view.PlaneView = Backbone.View.extend({
 
     update : function() {
 
-        if(Date.now() - this.model.lastCaptureTime >= 500 && this.model.isMaster()){ // capture after every 500ms
+        if(Date.now() - this.model.lastCaptureTime >= 600 && this.model.isMaster()){ // capture after every 500ms
             this.model.captureActions();
         // console.log("framerate", Date.now() - this.lastFrameTime);
         // this.lastFrameTime = Date.now();

@@ -26,7 +26,7 @@ Game.collection.Planes = Backbone.Collection.extend({
                 plane.is_captured = true;
 
 
-                console.log("got update", changedModel.actionLeftRight, changedModel.actionUpDown);
+                console.log("got update", changedModel.capturedActions.actionLeftRight, changedModel.capturedActions.actionUpDown);
             }, this), 300);
         }, this);
 

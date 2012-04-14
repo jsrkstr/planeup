@@ -6,7 +6,9 @@ Game.model.Plane = Backbone.Model.extend({
         capturedActions : {
             actionUpDown : 0,
             actionLeftRight : 0
-        }
+        },
+        captureInterval : 500,
+        applyInterval : 500
     },
     
     initialize: function(args) {
@@ -19,6 +21,11 @@ Game.model.Plane = Backbone.Model.extend({
             this.oldSet = this.set;
             this.set = this.newSet;
 
+            this.set({
+                captureInterval : Game.pingTest.roundTripAvg + 100,
+                applyInterval : Game.pingTest.roundTripAvg + 100
+            }, {local : true});
+
             this.controller = Game.allControllers.create({ id : this.id }); // create controller
 
         } else {
@@ -28,6 +35,7 @@ Game.model.Plane = Backbone.Model.extend({
         this.controller.bind("controller:update", this.applyActions, this);
 
         this.controller.master = this.master;
+        this.controller.plane = this;
 
 
         this.view = new Game.view.PlaneView({model : this});

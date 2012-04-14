@@ -41,7 +41,13 @@ bullets.use(backboneio.middleware.memoryStore());
 var controllers = backboneio.createBackend();
 controllers.use(backboneio.middleware.memoryStore());
 
+var pings = backboneio.createBackend();
 
-backboneio.listen(app, { planes : planes, bullets : bullets, controllers : controllers });
+pings.use('read', function(req, res, next) {
+	req.model.timestamp = Date.now();
+    res.end(req.model);
+});
+
+backboneio.listen(app, { planes : planes, bullets : bullets, controllers : controllers, pings : pings });
 
 console.log("Express server listening on port %d in %s mode", app.address().port, app.settings.env);

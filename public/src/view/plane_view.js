@@ -99,10 +99,18 @@ Game.view.PlaneView = Backbone.View.extend({
         this.model.bind("change:health", this.onHealthChanged, this);
         this.model.bind("change:time", this.onChangeTime, this);
 
+        this.updateCount = 0;
     },
     
 
     update : function() {
+        ++this.updateCount;
+
+        if(this.updateCount == 60 && this.model.isMaster()){
+            console.log("plane sync");
+            this.model.save();
+            this.updateCount = 0;
+        }
 
         var model = this.model.toJSON();
         Game.worker.planeUpdate(model, this.config).on("data", $.proxy(this.onUpdated, this));

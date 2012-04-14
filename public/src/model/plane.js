@@ -27,6 +27,8 @@ Game.model.Plane = Backbone.Model.extend({
 
         this.controller.bind("controller:update", this.applyActions, this);
 
+        this.controller.master = this.master;
+
 
         this.view = new Game.view.PlaneView({model : this});
     },

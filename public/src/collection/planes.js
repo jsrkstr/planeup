@@ -19,9 +19,15 @@ Game.collection.Planes = Backbone.Collection.extend({
         }, this);
 
         this.bind('backend:update', function(model) {
+            var changedModel = model;
             window.setTimeout($.proxy(function(){
-                this.get(model.id).set(model);
-            }, this), 1000);
+                var plane = this.get(changedModel.id);
+                plane.set(changedModel);
+                plane.is_captured = true;
+
+
+                console.log("got update", changedModel.actionLeftRight, changedModel.actionUpDown);
+            }, this), 300);
         }, this);
 
         this.bind('backend:update', this.addExistingPlane, this);

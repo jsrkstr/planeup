@@ -1,49 +1,52 @@
-Game.worker.planeUpdate = worker(function update(a, u, q, currPos, config) {
+Game.worker.planeUpdate = worker(function update(model, config) {
     var t = 0.1;
 
     // acceleration
-    if(a == 100) {
-        a = u < 0 ? config.a + config.da : config.a;
+    switch(model.actionUpDown) {
 
-    } else if(a == -100) {
-        a = u > 0? -(config.a + config.da) : -config.a;
+        case 1 :    model.a = model.u < 0 ? config.a + config.da : config.a; // up
+            break;
 
-    } else { // brakes
+        case -1 :   model.a = model.u > 0? -(config.a + config.da) : -config.a; // down
+            break;
 
-        if(u > 0) {
-            a = -config.da;
-        } else if(u < 0) {
-            a = config.da;
-        }
+        case 0 :    if(model.u > 0) {
+                        model.a = -config.da;
+                    } else if(model.u < 0) {
+                        model.a = config.da;
+                    }
+            break;
+    }
+
+    // direction
+    switch(model.actionLeftRight) {
+        case -1 :   model.direction -= 0.05; // left
+            break;
+
+        case 1 :    model.direction += 0.05; // right
+            break;
+
+        case 0 :    // do nothing
+            break;
     }
 
 
-    var d = u * t + (a * Math.pow(t, 2))/2;          
-    var v = u + a * t;
+    var d = model.u * t + (model.a * Math.pow(t, 2))/2;          
+    var v = model.u + model.a * t;
 
-    var ang = q % (2 * Math.PI);
+    var ang = model.direction % (2 * Math.PI);
 
-    u = v > config.vmax ? config.vmax : v;
+    model.u = v > config.vmax ? config.vmax : v;
 
-    var dx = Math.round(d * Math.cos(q));
-    var dy = Math.round(d * Math.sin(q));
+    var dx = Math.round(d * Math.cos(model.direction));
+    var dy = Math.round(d * Math.sin(model.direction));
 
-    currPos.x += dx;
-    currPos.y += dy;
+    model.currPosition.x += dx;
+    model.currPosition.y += dy;
 
-    if(ang < 0)
-        angle = 6.28 + ang;
-    else 
-        angle = ang;
+    model.direction = ang < 0 ? 6.28 + ang : ang;
         
-    var data = {
-        a : a,
-        u : u,
-        currPos : currPos,
-        angle : angle
-    };
-
-    return data;
+    return model;
 });
 
 
@@ -94,38 +97,44 @@ Game.view.PlaneView = Backbone.View.extend({
         this.set_state("healthy");
 
         this.model.bind("change:health", this.onHealthChanged, this);
-        this.model.bind("change", this.onChangeTime, this);
+        this.model.bind("change:time", this.onChangeTime, this);
+        this.model.bind("change:actionLeftRight", this.sync, this);
+        this.model.bind("change:actionUpDown", this.sync, this);
 
     },
     
 
     update : function() {
 
+        var model = this.model.toJSON();
 
-        var a = this.model.a || 0,
-        u = this.model.get("u"),
-        q = this.model.direction || this.model.get("direction"),
-        currPos = this.model.get("currPosition");
-
-        Game.worker.planeUpdate(a, u, q, currPos, this.config).on("data", $.proxy(this.onUpdated, this));
+        Game.worker.planeUpdate(model, this.config).on("data", $.proxy(this.onUpdated, this));
 
     },
 
 
-    onUpdated : function(data){
+    onUpdated : function(model){
 
-        this.model.set({
-            a : data.a,
-            u : data.u,
-            currPosition : data.currPos,
-            direction : data.angle
-        }, 
-        { 
-            local : true
-        });
+        // this.model.set({
+        //     a : data.a,
+        //     u : data.u,
+        //     currPosition : data.currPos,
+        //     direction : data.angle
+        // }, 
+        // { 
+        //     local : true
+        // });
+
+        // as this function is async so it overrides the changed values of model, that were changed between sync
+        // time, hence we restore original values
+
+        model.actionLeftRight = this.model.get("actionLeftRight");
+        model.actionUpDown = this.model.get("actionUpDown")
+
+        this.model.set(model, {local : true});
             
 
-        this.sync();
+        //this.sync();
 
             //Game.delEntity(this.model);    
     },
@@ -133,14 +142,9 @@ Game.view.PlaneView = Backbone.View.extend({
 
     sync : function(){
 
-        this.tick = this.tick || 0;
-
-        if(this.model.master && this.tick == 2){
+        if(this.model.master){
             this.model.set({"time" : Date.now() }, {local : true});// only for test purpose
             this.model.save();
-            this.tick = 0;
-        } else {
-            this.tick++;
         }
     },
 

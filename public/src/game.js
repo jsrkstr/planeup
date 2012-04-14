@@ -69,6 +69,7 @@ Game.onReady(function(){
     var d = team == "red"? 0 : Math.PI;
 
     // Game.allPlanes.create({
+    //     a : 0,
     //     id : Date.now(),
     //     u : 0,
     //     direction : d,

@@ -1,27 +1,35 @@
 Game.mixin.RemoteControlled = {
 
-    keyHeld_37 : function () {
-        this.model.direction = this.model.get("direction") - 0.1;
+    keyDown_37 : function () {
+        this.model.set({actionLeftRight : -1}, {local : true}); // left
     },
         
-    keyHeld_39 : function () {
-        this.model.direction = this.model.get("direction") + 0.1;
+    keyDown_39 : function () {
+        this.model.set({actionLeftRight : 1}, {local : true}); // right
+    },
+
+    keyUp_37 : function () {
+        this.model.set({actionLeftRight : 0}, {local : true}); // reset
     },
         
+    keyUp_39 : function () {
+        this.model.set({actionLeftRight : 0}, {local : true}); // reset
+    },
+
     keyDown_38 : function () {
-        this.model.a = 100;
+        this.model.set({actionUpDown : 1}, {local : true}); // up
     },
 
     keyUp_38 : function () {
-        this.model.a  = 0;
+        this.model.set({actionUpDown : 0}, {local : true}); // reset
     },
 
     keyDown_40 : function () {
-        this.model.a = -100;
+        this.model.set({actionUpDown : -1}, {local : true}); // down
     },
 
     keyUp_40 : function () {
-        this.model.a = 0;
+        this.model.set({actionUpDown : 0}, {local : true}); // reset
     },
         
     keyDown_32 : function () {

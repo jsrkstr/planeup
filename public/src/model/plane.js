@@ -24,6 +24,10 @@ Game.model.Plane = Backbone.Model.extend({
     newSet : function(attrs, options) {
         if(options && options.local)
             this.oldSet(attrs);
+    },
+
+    isMaster : function(){
+        return this.master;
     }
 
     

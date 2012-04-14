@@ -99,28 +99,14 @@ Game.view.PlaneView = Backbone.View.extend({
         this.model.bind("change:health", this.onHealthChanged, this);
         this.model.bind("change:time", this.onChangeTime, this);
 
-        this.updateTick = 0;
-
     },
     
 
     update : function() {
 
-        if(Date.now() - this.model.lastCaptureTime >= 600 && this.model.isMaster()){ // capture after every 500ms
-            this.model.captureActions();
-        // console.log("framerate", Date.now() - this.lastFrameTime);
-        // this.lastFrameTime = Date.now();
-
-        }
-
-        this.model.applyActions(); // try to apply 
-
-
-        //console.log("framerate", Date.now() - this.lastFrameTime);
-        //this.lastFrameTime = Date.now();
-
         var model = this.model.toJSON();
         Game.worker.planeUpdate(model, this.config).on("data", $.proxy(this.onUpdated, this));
+
     },
 
 
@@ -133,11 +119,6 @@ Game.view.PlaneView = Backbone.View.extend({
         // model.actionUpDown = this.model.get("actionUpDown");
 
         this.model.set(model, {local : true});
-            
-
-        //this.sync();
-
-            //Game.delEntity(this.model);    
     },
 
 

@@ -63,6 +63,8 @@ Game.onReady(function(){
 
     Game.allPlanes = new Game.collection.Planes();
 
+    Game.allControllers = new Game.collection.Controllers();
+
     Game.bullets = new Game.collection.Bullets();
 
     var team = Math.random() > 0.5 ? "red" : "blue";

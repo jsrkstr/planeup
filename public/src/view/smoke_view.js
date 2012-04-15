@@ -21,6 +21,7 @@ Game.view.SmokeView = Backbone.View.extend({
         this.sourceX += 16;
         if(this.sourceX == this.spriteLength[this.model.get("color")] ){
             Game.delEntity(this.model);
+            Game.trash(this);
         }
     },
 

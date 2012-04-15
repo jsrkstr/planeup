@@ -45,6 +45,11 @@ Game = _.extend({
 
             Game.bind("ready", callback);
         }
+    },
+
+
+    trash : function(obj){
+        obj = null;
     }
 
 }, Backbone.Events);

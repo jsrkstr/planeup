@@ -89,9 +89,9 @@ Game.view.PlaneView = Backbone.View.extend({
         this.smokeIndex = 0;
 
         // add some clouds
-        for(var i = 0; i < 20; i++){
-            this.tail.push(new Game.model.Smoke());
-        }
+        // for(var i = 0; i < 20; i++){
+        //     this.tail.push(new Game.model.Smoke());
+        // }
 
         statemachine(this);
         this.set_state("healthy");
@@ -193,7 +193,7 @@ Game.view.PlaneView = Backbone.View.extend({
             if(this.model.get("u") < 10)
                 return false;
 
-            var cloud = this.tail[this.smokeIndex];
+            var cloud = new Game.model.Smoke();//this.tail[this.smokeIndex];
             cloud.set({ 
                 color : color,
                 pos : {

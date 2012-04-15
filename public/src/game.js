@@ -83,7 +83,8 @@ Game.onReady(function(){
     //         currPosition : {
     //             x : gs.random(300, 100),
     //             y : gs.random(10, 100)
-    //         }
+    //         },
+    //         serverTimeDiffAvg : Game.pingTest.serverTimeDiffAvg
     //     });
 
     // });

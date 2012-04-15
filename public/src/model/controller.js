@@ -15,12 +15,12 @@ Game.model.Controller = Backbone.Model.extend({
     
     initialize: function(args) {
 
-    	this.bind("change", function(){
+    	this.bind("change", function(){ // got update
 
     		if(!this.master)
     			console.log("got update", this.get("leftRight"), this.get("upDown"));
 
-    		var timeRemaining = this.plane.get("applyInterval") - (Date.now() - this.get("timestamp"));
+    		var timeRemaining = this.plane.get("applyInterval") - (this.plane.now() - this.get("timestamp"));
 
     		var self = this;
 
@@ -45,7 +45,7 @@ Game.model.Controller = Backbone.Model.extend({
 
 
     captureActions : function() {
-    	var timeRemaining = this.plane.get("captureInterval") - (Date.now() - this.lastCaptureInterval);
+    	var timeRemaining = this.plane.get("captureInterval") - (this.plane.now() - this.lastCaptureInterval);
 
     	if(timeRemaining <= 0) {
 
@@ -55,10 +55,10 @@ Game.model.Controller = Backbone.Model.extend({
     		this.save({
             	leftRight : this.actionLeftRight,
             	upDown : this.actionUpDown,
-            	timestamp : Date.now()
+            	timestamp : this.plane.now()
         	});
 
-        	this.lastCaptureInterval = Date.now();
+        	this.lastCaptureInterval = this.plane.now();
 
     		console.log("capturing", this.actionLeftRight, this.actionUpDown);
 

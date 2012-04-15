@@ -7,8 +7,8 @@ Game.model.Plane = Backbone.Model.extend({
             actionUpDown : 0,
             actionLeftRight : 0
         },
-        captureInterval : 500,
-        applyInterval : 500
+        captureInterval : 400,
+        applyInterval : 400
     },
     
     initialize: function(args) {
@@ -21,10 +21,10 @@ Game.model.Plane = Backbone.Model.extend({
             this.oldSet = this.set;
             this.set = this.newSet;
 
-            this.set({
-                captureInterval : Game.pingTest.roundTripAvg + 100,
-                applyInterval : Game.pingTest.roundTripAvg + 100
-            }, {local : true});
+            // this.set({
+            //     captureInterval : Game.pingTest.roundTripAvg + 100,
+            //     applyInterval : Game.pingTest.roundTripAvg + 100
+            // }, {local : true});
 
             this.controller = Game.allControllers.create({ id : this.id }); // create controller
 
@@ -56,12 +56,17 @@ Game.model.Plane = Backbone.Model.extend({
 
     applyActions : function(controller) {
 
-        console.log("applying", Date.now(), controller.leftRight, controller.upDown);
+        console.log("applying", this.now(), controller.leftRight, controller.upDown);
 
         this.set({
             actionLeftRight : controller.leftRight,
             actionUpDown : controller.upDown
         }, {local : true});
+    },
+
+
+    now : function() {
+        return Math.round(Date.now() - this.get("serverTimeDiffAvg"));
     }
 
     

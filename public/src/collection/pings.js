@@ -7,6 +7,8 @@ Pings = Backbone.Collection.extend({
 
     oneWay : [],
 
+    serverTimeDiff : [],
+
     initialize: function() {
         // Setup default backend bindings
         this.bindBackend();
@@ -29,8 +31,11 @@ Pings = Backbone.Collection.extend({
 
 
     success : function(model) {
-    	this.roundTrip.push(Date.now() - model.id);
+        var roundTrip = Date.now() - model.id;
+    	this.roundTrip.push(roundTrip);
     	this.oneWay.push(model.get("timestamp") - model.id);
+        var serverTime = model.get("timestamp") + (roundTrip/2);
+        this.serverTimeDiff.push(Date.now() - serverTime);
 
     	if(this.pingCount < 25)
     		this.doPing();
@@ -44,6 +49,8 @@ Pings = Backbone.Collection.extend({
     	console.log("Min Ping", _.min(this.roundTrip), _.min(this.oneWay));
     	this.roundTripAvg = _.reduce(this.roundTrip, function(memo, num){ return memo + num; }, 0) / this.roundTrip.length;
     	this.oneWayAvg = _.reduce(this.oneWay, function(memo, num){ return memo + num; }, 0) / this.oneWay.length;
+
+        this.serverTimeDiffAvg = _.reduce(this.serverTimeDiff, function(memo, num){ return memo + num; }, 0) / this.serverTimeDiff.length;
 
     	console.log("Avg Ping", this.roundTripAvg, this.oneWayAvg);
 

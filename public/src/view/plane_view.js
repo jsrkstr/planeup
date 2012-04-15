@@ -84,12 +84,12 @@ Game.view.PlaneView = Backbone.View.extend({
             dead : $("#" + this.model.get("team") + "-wreck-plane-image")[0]
         };
 
-        this.smokeInterval = 6;
+        this.smokeInterval = 3;
         this.smokeStep = 1;
         this.smokeIndex = 0;
 
         // add some clouds
-        for(var i = 0; i < 5; i++){
+        for(var i = 0; i < 20; i++){
             this.tail.push(new Game.model.Smoke());
         }
 
@@ -187,9 +187,12 @@ Game.view.PlaneView = Backbone.View.extend({
 
 
     drawSmoke : function(context, color, pos){
-            
+
         if(this.smokeStep == this.smokeInterval){
             
+            if(this.model.get("u") < 10)
+                return false;
+
             var cloud = this.tail[this.smokeIndex];
             cloud.set({ 
                 color : color,
@@ -199,7 +202,7 @@ Game.view.PlaneView = Backbone.View.extend({
                 }
             });
 
-            if(this.smokeIndex == 4)
+            if(this.smokeIndex == 19)
                 this.smokeIndex = 0;
             else 
                 this.smokeIndex++;

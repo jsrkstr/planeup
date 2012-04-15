@@ -67,7 +67,7 @@ Game.view.PlaneView = Backbone.View.extend({
 
     config : {
         vmax : 100,
-        a : 100,
+        a : 40,
         da : 20,
     },
 

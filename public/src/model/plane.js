@@ -114,10 +114,10 @@ Game.model.Plane = Backbone.Model.extend({
 
         console.log("P1", Math.round(curr.x), Math.round(curr.y), Math.round(d), "->", currMove, action.toString());
 
-        if(this.count == 10)
-            return false;
+        // if(this.count == 10)
+        //     return false;
 
-        this.count++;
+        // this.count++;
 
         this.onAIUpdate(action);
     },

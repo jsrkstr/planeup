@@ -21,12 +21,20 @@ Game.worker.planeUpdate = worker(function update(model, config, time) { // time 
             break;
     }
 
+
+    // velocity dependent turning radius
+
+    var turnCoefficient = 300 / (Math.abs(model.u) + 1) ;// range 3 - 9
+
+    turnCoefficient = turnCoefficient > 7 ? 7 : turnCoefficient;
+    console.log(turnCoefficient);
+
     // direction
     switch(model.actionLeftRight) {
-        case -1 :   model.direction -= 0.05; // left
+        case -1 :   model.direction -= turnCoefficient / 100; //0.05; // left
             break;
 
-        case 1 :    model.direction += 0.05; // right
+        case 1 :    model.direction += turnCoefficient / 100 //0.05; // right
             break;
 
         case 0 :    // do nothing

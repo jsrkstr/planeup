@@ -15,10 +15,10 @@ Game.model.Controller = Backbone.Model.extend({
     
     initialize: function(args) {
 
-    	this.bind("change", function(){ // got update
+    	this.bind("change", function(){ // got update( on capturing)
 
-    		if(!this.master)
-    			console.log("got update", this.get("leftRight"), this.get("upDown"));
+    		//if(!this.master)
+    			//console.log("got update", this.get("leftRight"), this.get("upDown"));
 
     		var timeRemaining = this.plane.get("applyInterval") - (this.plane.now() - this.get("timestamp"));
 
@@ -29,48 +29,63 @@ Game.model.Controller = Backbone.Model.extend({
     		}, timeRemaining);
     		
     	}, this);
+
+        this.bind("controller:update", this.onApply, this);
     },
 
 
 	setActionLeftRight : function(value) {
         this.actionLeftRight = value;
+
+        this.isChanged = true;
         this.captureActions();
     },
 
 
     setActionUpDown : function(value) {
         this.actionUpDown = value;
+
+        this.isChanged = true;
         this.captureActions();
     },
 
 
     captureActions : function() {
-    	var timeRemaining = this.plane.get("captureInterval") - (this.plane.now() - this.lastCaptureInterval);
 
-    	if(timeRemaining <= 0) {
+        if(this.isCaptured)
+            return false; // if an action is captured, wait till it is applied
 
-    		// if(this.plane.isMaster())
-    		// 	this.plane.save();
-    		
-    		this.save({
-            	leftRight : this.actionLeftRight,
-            	upDown : this.actionUpDown,
-            	timestamp : this.plane.now()
-        	});
+		this.save({
+        	leftRight : this.actionLeftRight,
+        	upDown : this.actionUpDown,
+        	timestamp : this.plane.now()
+    	});
 
-        	this.lastCaptureInterval = this.plane.now();
+		//console.log("capturing", this.actionLeftRight, this.actionUpDown, this.isChanged, this.needResetSave);
 
-    		console.log("capturing", this.actionLeftRight, this.actionUpDown);
+        if(this.needResetSave)
+            this.needResetSave = false;
 
-    	} else {
+        if(this.isChanged) { 
+            // reset values
+            this.actionUpDown = 0;
+            this.actionLeftRight = 0;
+            this.needResetSave = true;
+        }
 
-    		var self = this;
+        this.isChanged = false;
 
-    		setTimeout(function() {
-    			self.captureActions();
-    		}, timeRemaining);
-    	}
+        // dnt touch
+        this.isCaptured = true;
 
+    },
+
+    onApply : function(){
+        //console.log("applied");
+        this.isCaptured = false;
+
+        if(this.needResetSave || this.isChanged)
+            this.captureActions();
     }
 
 });

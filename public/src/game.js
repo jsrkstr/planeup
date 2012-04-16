@@ -78,19 +78,37 @@ Game.onReady(function(){
 
     // Game.pingTest = new Pings().bind("completed", function(){
 
-    //     Game.allPlanes.create({
+    //     Game.human = Game.allPlanes.create({
     //         a : 0,
     //         id : Date.now(),
     //         u : 0,
-    //         direction : d,
+    //         direction : Math.PI,
     //         master : true,
-    //         team : team,
+    //         AI : false, 
+    //         team : "blue",
     //         currPosition : {
-    //             x : gs.random(300, 100),
+    //             x : gs.random(500, 600),
+    //             y : gs.random(400, 600)
+    //         },
+    //         serverTimeDiffAvg : Game.pingTest.serverTimeDiffAvg
+    //     });
+
+
+    //     Game.AI = Game.allPlanes.create({
+    //         a : 0,
+    //         id : Date.now() + 100000,
+    //         u : 0,
+    //         direction : 0,
+    //         master : true,
+    //         AI : true, 
+    //         team : "red",
+    //         currPosition : {
+    //             x : gs.random(100, 300),
     //             y : gs.random(10, 100)
     //         },
     //         serverTimeDiffAvg : Game.pingTest.serverTimeDiffAvg
     //     });
+
 
     // });
 

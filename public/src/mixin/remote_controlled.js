@@ -2,37 +2,49 @@ Game.mixin.RemoteControlled = {
 
     lastBulletTime : 0,
 
-    keyDown_37 : function () {
+    // keyDown_37 : function () {
+    //     this.model.controller.setActionLeftRight(-1); // left
+    // },
+        
+    // keyDown_39 : function () {
+    //     this.model.controller.setActionLeftRight(1); // right
+    // },
+
+    keyHeld_37 : function () {
         this.model.controller.setActionLeftRight(-1); // left
     },
         
-    keyDown_39 : function () {
+    keyHeld_39 : function () {
         this.model.controller.setActionLeftRight(1); // right
     },
 
-    keyUp_37 : function () {
-        this.model.controller.setActionLeftRight(0);
-    },
+    // keyUp_37 : function () {
+    //     this.model.controller.setActionLeftRight(0);
+    // },
         
-    keyUp_39 : function () {
-        this.model.controller.setActionLeftRight(0);
-    },
+    // keyUp_39 : function () {
+    //     this.model.controller.setActionLeftRight(0);
+    // },
 
-    keyDown_38 : function () {
+    // keyDown_38 : function () {
+    //     this.model.controller.setActionUpDown(1); // up
+    // },
+
+    keyHeld_38 : function () {
         this.model.controller.setActionUpDown(1); // up
     },
 
-    keyUp_38 : function () {
-        this.model.controller.setActionUpDown(0);
-    },
+    // keyUp_38 : function () {
+    //     this.model.controller.setActionUpDown(0);
+    // },
 
     keyDown_40 : function () {
         this.model.controller.setActionUpDown(-1); // down
     },
 
-    keyUp_40 : function () {
-        this.model.controller.setActionUpDown(0);
-    },
+    // keyUp_40 : function () {
+    //     this.model.controller.setActionUpDown(0);
+    // },
         
     keyHeld_32 : function () {
         if(Date.now() - this.lastBulletTime < 200)

@@ -7,12 +7,19 @@ Game.model.Plane = Backbone.Model.extend({
             actionUpDown : 0,
             actionLeftRight : 0
         },
-        captureInterval : 400,
-        applyInterval : 400
+        captureInterval : 2000,
+        applyInterval : 2000
     },
     
     initialize: function(args) {
         this.master = false;
+
+        if(args.AI){
+            this.AI = true;
+            this.set({AI : false});
+        } else {
+            this.AI = false;
+        }
 
         if(args.master){
             this.master = true;
@@ -37,6 +44,22 @@ Game.model.Plane = Backbone.Model.extend({
         this.controller.master = this.master;
         this.controller.plane = this;
 
+        // AI stuff //
+        var self = this;
+
+        if(this.AI){
+            _.extend(this, Game.mixin.AIControlled)
+
+            // first AI action
+            window.setTimeout(function() {
+                self.getAIUpdate();
+            }, 2000);
+
+            this.controller.bind("controller:update", this.getAIUpdate, this);
+        }
+
+        // AI stuff //
+
 
         this.view = new Game.view.PlaneView({model : this});
     },
@@ -56,7 +79,7 @@ Game.model.Plane = Backbone.Model.extend({
 
     applyActions : function(controller) {
 
-        console.log("applying", this.now(), controller.leftRight, controller.upDown);
+        //console.log("applying", this.now(), controller.leftRight, controller.upDown);
 
         this.set({
             actionLeftRight : controller.leftRight,
@@ -67,7 +90,37 @@ Game.model.Plane = Backbone.Model.extend({
 
     now : function() {
         return Math.round(Date.now() - this.get("serverTimeDiffAvg"));
-    }
+    },
+
+
+    getAIUpdate : function() {
+        var currMove = {
+            value : 0,
+            p1 : this.toJSON(),
+            p2 : Game.human.toJSON(),
+            terminal : function(){return false;},
+            action : []
+        }
+
+        var value = this.alphabeta(currMove, 1, 1, -this.INFINITY, this.INFINITY);
+
+        var action = this.getAction(currMove, value);
+
+        this.onAIUpdate(action);
+    },
+
+
+    onAIUpdate : function(action){
+
+        // perform action
+        this.controller.setActionUpDown(action[0]);
+        this.controller.setActionLeftRight(action[1]);
+
+        var curr = this.get("currPosition");
+        console.log(Math.round(curr.x), Math.round(curr.y), this.get("direction"));
+    },
+
+
 
     
 });

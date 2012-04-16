@@ -76,8 +76,9 @@ Game.view.PlaneView = Backbone.View.extend({
         Game.addEntity(this);
 
         // make plane user controlled
-        if(this.model.master)
+        if(this.model.master && !this.model.AI)
             _.extend(this, Game.mixin.RemoteControlled);
+
         
         this.sprite = {
             healthy : $("#" + args.model.get("team") + "-plane-image")[0],
@@ -112,7 +113,7 @@ Game.view.PlaneView = Backbone.View.extend({
             this.updateCount = 0;
         }
 
-        var model = this.model.toJSON();
+        var model = this.model.toJSON();  
         Game.worker.planeUpdate(model, this.config).on("data", $.proxy(this.onUpdated, this));
 
     },

@@ -7,8 +7,8 @@ Game.model.Plane = Backbone.Model.extend({
             actionUpDown : 0,
             actionLeftRight : 0
         },
-        captureInterval : 2000,
-        applyInterval : 2000
+        captureInterval : 400,
+        applyInterval : 400
     },
     
     initialize: function(args) {
@@ -55,7 +55,7 @@ Game.model.Plane = Backbone.Model.extend({
                 self.getAIUpdate();
             }, 2000);
 
-            this.controller.bind("controller:update", this.getAIUpdate, this);
+            this.controller.bind("controller:halftime", this.getAIUpdate, this);
         }
 
         // AI stuff //
@@ -102,9 +102,22 @@ Game.model.Plane = Backbone.Model.extend({
             action : []
         }
 
-        var value = this.alphabeta(currMove, 1, 1, -this.INFINITY, this.INFINITY);
+
+        var curr = this.get("currPosition");
+        var currP2 = Game.human.get("currPosition");
+        var d = this.get("direction");
+
+
+        var value = this.alphabeta(currMove, 1, "p1", -this.INFINITY, this.INFINITY);
 
         var action = this.getAction(currMove, value);
+
+        console.log("P1", Math.round(curr.x), Math.round(curr.y), Math.round(d), "->", currMove, action.toString());
+
+        if(this.count == 10)
+            return false;
+
+        this.count++;
 
         this.onAIUpdate(action);
     },
@@ -113,12 +126,12 @@ Game.model.Plane = Backbone.Model.extend({
     onAIUpdate : function(action){
 
         // perform action
-        this.controller.setActionUpDown(action[0]);
-        this.controller.setActionLeftRight(action[1]);
+        this.controller.setActions(action[0], action[1]);
 
-        var curr = this.get("currPosition");
-        console.log(Math.round(curr.x), Math.round(curr.y), this.get("direction"));
     },
+
+
+    count : 0
 
 
 

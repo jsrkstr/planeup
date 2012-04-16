@@ -15,20 +15,7 @@ Game.model.Controller = Backbone.Model.extend({
     
     initialize: function(args) {
 
-    	this.bind("change", function(){ // got update( on capturing)
-
-    		//if(!this.master)
-    			//console.log("got update", this.get("leftRight"), this.get("upDown"));
-
-    		var timeRemaining = this.plane.get("applyInterval") - (this.plane.now() - this.get("timestamp"));
-
-    		var self = this;
-
-    		window.setTimeout(function(){
-    			self.trigger("controller:update", self.toJSON());
-    		}, timeRemaining);
-    		
-    	}, this);
+    	this.bind("change", this.applyActionsAfterTimeout, this); // got update( on capturing)
 
         this.bind("controller:update", this.onApply, this);
     },
@@ -50,6 +37,15 @@ Game.model.Controller = Backbone.Model.extend({
     },
 
 
+    setActions : function(upDown, leftRight) {
+        this.actionUpDown = upDown;
+        this.actionLeftRight = leftRight;
+
+        this.isChanged = true;
+        this.captureActions();
+    },
+
+
     captureActions : function() {
 
         if(this.isCaptured)
@@ -61,7 +57,7 @@ Game.model.Controller = Backbone.Model.extend({
         	timestamp : this.plane.now()
     	});
 
-		//console.log("capturing", this.actionLeftRight, this.actionUpDown, this.isChanged, this.needResetSave);
+		console.log("capturing", this.actionUpDown, this.actionLeftRight);
 
         if(this.needResetSave)
             this.needResetSave = false;
@@ -80,12 +76,36 @@ Game.model.Controller = Backbone.Model.extend({
 
     },
 
+
     onApply : function(){
         //console.log("applied");
         this.isCaptured = false;
 
         if(this.needResetSave || this.isChanged)
             this.captureActions();
+    },
+
+
+    applyActionsAfterTimeout : function(){
+
+        //if(!this.master)
+            //console.log("got update", this.get("leftRight"), this.get("upDown"));
+
+        var timeRemaining = this.plane.get("applyInterval") - (this.plane.now() - this.get("timestamp"));
+
+        var self = this;
+
+        window.setTimeout(function(){
+            self.trigger("controller:update", self.toJSON());
+        }, timeRemaining);
+
+        // helper for master, to calulate next action at half time
+        if(this.master && this.plane.AI){
+            window.setTimeout(function(){
+                self.trigger("controller:halftime");
+            }, timeRemaining / 2);            
+        }
+
     }
 
 });

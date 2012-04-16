@@ -1,5 +1,8 @@
-Game.worker.planeUpdate = worker(function update(model, config) {
+Game.worker.planeUpdate = worker(function update(model, config, time) { // time in ms
     var t = 0.1;
+
+    if(time)
+        t = time / 300;
 
     // acceleration
     switch(model.actionUpDown) {
@@ -37,6 +40,7 @@ Game.worker.planeUpdate = worker(function update(model, config) {
     var ang = model.direction % (2 * Math.PI);
 
     model.u = v > config.vmax ? config.vmax : v;
+    //model.u = v < -config.vmax ? -config.vmax : v;
 
     var dx = Math.round(d * Math.cos(model.direction));
     var dy = Math.round(d * Math.sin(model.direction));
@@ -68,7 +72,7 @@ Game.view.PlaneView = Backbone.View.extend({
     config : {
         vmax : 100,
         a : 40,
-        da : 20,
+        da : 20
     },
 
 
@@ -107,7 +111,7 @@ Game.view.PlaneView = Backbone.View.extend({
     update : function() {
         ++this.updateCount;
 
-        if(this.updateCount == 100 && this.model.isMaster()){
+        if(this.updateCount == 200 && this.model.isMaster()){
             console.log("plane sync");
             this.model.save();
             this.updateCount = 0;

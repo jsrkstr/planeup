@@ -77,7 +77,7 @@ Game.view.PlaneView = Backbone.View.extend({
     tail : [], // list of smoke clouds
 
     config : {
-        vmax : 100,
+        vmax : 70, // set in calibration with airstrike
         a : 40,
         da : 20
     },

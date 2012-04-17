@@ -118,8 +118,8 @@ Game.view.PlaneView = Backbone.View.extend({
     update : function() {
         ++this.updateCount;
 
-        if(this.updateCount == 200 && this.model.isMaster()){
-            console.log("plane sync");
+        if(this.updateCount == 70 && this.model.isMaster()){ // 2 secs sync
+            //console.log("plane sync");
             this.model.save();
             this.updateCount = 0;
         }

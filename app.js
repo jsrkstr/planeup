@@ -48,6 +48,16 @@ pings.use('read', function(req, res, next) {
     res.end(req.model);
 });
 
-backboneio.listen(app, { planes : planes, bullets : bullets, controllers : controllers, pings : pings });
+var io = backboneio.listen(app, { planes : planes, bullets : bullets, controllers : controllers, pings : pings });
+
+// hack - allow only websockets transport
+io.configure(function () {
+  io.set('transports', ['websocket']);
+});
+
+io.configure('development', function () {
+  io.set('transports', ['websocket']);
+  //io.enable('log');
+});
 
 console.log("Express server listening on port %d in %s mode", app.address().port, app.settings.env);

@@ -27,7 +27,6 @@ Game.worker.planeUpdate = worker(function update(model, config, time) { // time 
     var turnCoefficient = 300 / (Math.abs(model.u) + 1) ;// range 3 - 9
 
     turnCoefficient = turnCoefficient > 7 ? 7 : turnCoefficient;
-    console.log(turnCoefficient);
 
     // direction
     switch(model.actionLeftRight) {

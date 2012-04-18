@@ -108,7 +108,7 @@ Game.model.Plane = Backbone.Model.extend({
         var d = this.get("direction");
 
 
-        var value = this.alphabeta(currMove, 2, "p1", -this.INFINITY, this.INFINITY);
+        var value = this.alphabeta(currMove, 1, "p1", -this.INFINITY, this.INFINITY);
 
         var action = this.getAction(currMove, value);
 

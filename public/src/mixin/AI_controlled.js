@@ -229,58 +229,65 @@ Game.mixin.AIControlled = {
 
 
 	updatePhysics : function(model, config, time) { // time in ms
-	    var t = 0.1;
+        var t = 0.1;
 
-	    if(time)
-	        t = time / 300;
+        if(time)
+            t = time / 300;
 
-	    // acceleration
-	    switch(model.actionUpDown) {
+        // acceleration
+        switch(model.actionUpDown) {
 
-	        case 1 :    model.a = model.u < 0 ? config.a + config.da : config.a; // up
-	            break;
+            case 1 :    model.a = model.u < 0 ? config.a + config.da : config.a; // up
+                break;
 
-	        case -1 :   model.a = model.u > 0? -(config.a + config.da) : -config.a; // down
-	            break;
+            case -1 :   model.a = model.u > 0? -(config.a + config.da) : -config.a; // down
+                break;
 
-	        case 0 :    if(model.u > 0) {
-	                        model.a = -config.da;
-	                    } else if(model.u < 0) {
-	                        model.a = config.da;
-	                    }
-	            break;
-	    }
-
-	    // direction
-	    switch(model.actionLeftRight) {
-	        case -1 :   model.direction -= 0.05; // left
-	            break;
-
-	        case 1 :    model.direction += 0.05; // right
-	            break;
-
-	        case 0 :    // do nothing
-	            break;
-	    }
+            case 0 :    if(model.u > 0) {
+                            model.a = -config.da;
+                        } else if(model.u < 0) {
+                            model.a = config.da;
+                        }
+                break;
+        }
 
 
-	    var d = model.u * t + (model.a * Math.pow(t, 2))/2;          
-	    var v = model.u + model.a * t;
+        // velocity dependent turning radius
 
-	    var ang = model.direction % (2 * Math.PI);
+        var turnCoefficient = 300 / (Math.abs(model.u) + 1) ;// range 3 - 9
 
-	    model.u = v > config.vmax ? config.vmax : v;
-	    model.u = v < -config.vmax ? -config.vmax : v;
+        turnCoefficient = turnCoefficient > 7 ? 7 : turnCoefficient;
 
-	    var dx = Math.round(d * Math.cos(model.direction));
-	    var dy = Math.round(d * Math.sin(model.direction));
+        // direction
+        switch(model.actionLeftRight) {
+            case -1 :   model.direction -= turnCoefficient / 100; //0.05; // left
+                break;
 
-	    model.currPosition.x += dx;
-	    model.currPosition.y += dy;
+            case 1 :    model.direction += turnCoefficient / 100 //0.05; // right
+                break;
 
-	    model.direction = ang < 0 ? 6.28 + ang : ang;
-	        
-	    return model;
+            case 0 :    // do nothing
+                break;
+        }
+
+
+        var d = model.u * t + (model.a * Math.pow(t, 2))/2;          
+        var v = model.u + model.a * t;
+
+        var ang = model.direction % (2 * Math.PI);
+
+        model.u = v > config.vmax ? config.vmax : v;
+        //model.u = v < -config.vmax ? -config.vmax : v;
+
+        var dx = Math.round(d * Math.cos(model.direction));
+        var dy = Math.round(d * Math.sin(model.direction));
+
+        model.currPosition.x += dx;
+        model.currPosition.y += dy;
+
+        model.direction = ang < 0 ? 6.28 + ang : ang;
+            
+        return model;
 	}
 
 };

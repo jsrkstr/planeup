@@ -12,6 +12,6 @@ Game.view.World = Backbone.View.extend({
 
     draw : function(context) {
         gs.clear();
-        gs.background('rgba(100, 100, 100, 1.0)');
+        gs.background('#cbbefe');
     }
 });

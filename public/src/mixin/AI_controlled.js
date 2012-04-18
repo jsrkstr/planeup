@@ -123,12 +123,17 @@ Game.mixin.AIControlled = {
 				directionFactor = -oldDiff; // poor
 		}
 
+		// disabled
+		//directionFactor = 0;
 
-		directionFactor = Math.round( directionFactor * 10 ); // it can be -ve or +ve, it changes goodness of a move, range -62 - +62
 
-		var sum = Math.round(displacement) + directionFactor;
+		directionFactor = Math.round( directionFactor * 3 ); // it can be -ve or +ve, it changes goodness of a move, range -62 - +62
 
-		move.value = this.INFINITY - sum; // more the displ worst the move
+		// displacement factor is always + but diretionfactor can be - and +
+		move.value = this.INFINITY - Math.round(displacement) + directionFactor ; // more the displ worst the move
+
+		move.df = directionFactor;
+		move.disp = displacement;
 
 		return (move.DEPTH%2 ? -1: 1) * move.value;
 	},

@@ -78,37 +78,41 @@ Game.onReady(function(){
 
     Game.pingTest = new Pings().bind("completed", function(){
 
-        Game.human = Game.allPlanes.create({
-            a : 0,
-            id : Date.now(),
-            u : 0,
-            direction : Math.PI,
-            master : true,
-            AI : false, 
-            team : "blue",
-            currPosition : {
-                x : gs.random(300, 400),
-                y : gs.random(400, 600)
-            },
-            serverTimeDiffAvg : Game.pingTest.serverTimeDiffAvg
-        });
+        for(var  i  = 0; i < 1; i++){
 
+            Game.human = Game.allPlanes.create({
+                a : 0,
+                id : Date.now(),
+                u : 0,
+                direction : Math.PI,
+                master : true,
+                AI : false, 
+                team : "blue",
+                currPosition : {
+                    x : gs.random(300, 400),
+                    y : gs.random(400, 600)
+                },
+                serverTimeDiffAvg : Game.pingTest.serverTimeDiffAvg
+            });
 
-        // Game.AI = Game.allPlanes.create({
-        //     a : 0,
-        //     id : Date.now() + 100000,
-        //     u : 0,
-        //     direction : 0,
-        //     master : true,
-        //     AI : true, 
-        //     team : "red",
-        //     currPosition : {
-        //         x : gs.random(100, 300),
-        //         y : gs.random(10, 100)
-        //     },
-        //     serverTimeDiffAvg : Game.pingTest.serverTimeDiffAvg
-        // });
+        
 
+            Game.AI = Game.allPlanes.create({
+                a : 0,
+                id : Date.now() + 100000,
+                u : 0,
+                direction : 0,
+                master : true,
+                AI : true, 
+                team : "red",
+                currPosition : {
+                    x : gs.random(100, 300),
+                    y : gs.random(10, 100)
+                },
+                serverTimeDiffAvg : Game.pingTest.serverTimeDiffAvg
+            });
+ 
+        }
 
     });
 

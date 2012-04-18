@@ -7,8 +7,8 @@ Game.model.Plane = Backbone.Model.extend({
             actionUpDown : 0,
             actionLeftRight : 0
         },
-        captureInterval : 400,
-        applyInterval : 400
+        captureInterval : 300,
+        applyInterval : 300
     },
     
     initialize: function(args) {
@@ -108,7 +108,7 @@ Game.model.Plane = Backbone.Model.extend({
         var d = this.get("direction");
 
 
-        var value = this.alphabeta(currMove, 1, "p1", -this.INFINITY, this.INFINITY);
+        var value = this.alphabeta(currMove, 2, "p1", -this.INFINITY, this.INFINITY);
 
         var action = this.getAction(currMove, value);
 

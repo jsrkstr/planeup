@@ -12,7 +12,7 @@ Game.collection.Controllers = Backbone.Collection.extend({
 
         this.bind('backend:update', function(model) {
         
-            //window.setTimeout($.proxy(function(){ // introduce fake lag
+            window.setTimeout($.proxy(function(){ // introduce fake lag
 
                 var m = this.get(model.id);
                 if(m)
@@ -20,7 +20,7 @@ Game.collection.Controllers = Backbone.Collection.extend({
                 else 
                     this.add(model);
 
-            //}, this), 300);
+            }, this), 300);
             
         }, this);
         

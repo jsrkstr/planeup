@@ -97,20 +97,20 @@ Game.onReady(function(){
 
         
 
-            Game.AI = Game.allPlanes.create({
-                a : 0,
-                id : Date.now() + 100000,
-                u : 0,
-                direction : 0,
-                master : true,
-                AI : true, 
-                team : "red",
-                currPosition : {
-                    x : gs.random(100, 300),
-                    y : gs.random(10, 100)
-                },
-                serverTimeDiffAvg : Game.pingTest.serverTimeDiffAvg
-            });
+            // Game.AI = Game.allPlanes.create({
+            //     a : 0,
+            //     id : Date.now() + 100000,
+            //     u : 0,
+            //     direction : 0,
+            //     master : true,
+            //     AI : true, 
+            //     team : "red",
+            //     currPosition : {
+            //         x : gs.random(100, 300),
+            //         y : gs.random(10, 100)
+            //     },
+            //     serverTimeDiffAvg : Game.pingTest.serverTimeDiffAvg
+            // });
  
         }
 

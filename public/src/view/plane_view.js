@@ -26,10 +26,12 @@ Game.worker.planeUpdate = worker(function update(model, config, time) { // time 
 
     var turnCoefficient = 300 / (Math.abs(model.u) + 1) ;// range 3 - 9
 
-    turnCoefficient = turnCoefficient > 7 ? 7 : turnCoefficient;
+    turnCoefficient = turnCoefficient > 8 ? 8 : turnCoefficient;
+
+    // turnCoefficient = 8;
 
     // direction
-    switch(model.actionLeftRight) {
+    switch(model.u > 0 ? model.actionLeftRight : 0) { // no direction change when no acceleration
         case -1 :   model.direction -= turnCoefficient / 100; //0.05; // left
             break;
 
@@ -55,6 +57,12 @@ Game.worker.planeUpdate = worker(function update(model, config, time) { // time 
     model.currPosition.x += dx;
     model.currPosition.y += dy;
 
+    if(model.currPosition.x < -20)
+        model.currPosition.x = 1180;
+
+    if(model.currPosition.x > 1220)
+        model.currPosition.x = 20;
+
     model.direction = ang < 0 ? 6.28 + ang : ang;
         
     return model;
@@ -79,7 +87,8 @@ Game.view.PlaneView = Backbone.View.extend({
     config : {
         vmax : 70, // set in calibration with airstrike
         a : 40,
-        da : 20
+        da : 20,
+        ga : 34
     },
 
 
@@ -155,8 +164,13 @@ Game.view.PlaneView = Backbone.View.extend({
         if(h < 50){
             if(h > 0)
                 this.set_state("injured"); 
-            else
+            else{
                 this.set_state("dead"); 
+                this.update = function(){};
+                window.setTimeout(function(){
+                    document.location.href = document.location.href;
+                }, 5000);
+            }
         } else {
             this.set_state("healthy"); 
         }

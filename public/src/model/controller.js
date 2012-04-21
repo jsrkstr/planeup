@@ -37,9 +37,10 @@ Game.model.Controller = Backbone.Model.extend({
     },
 
 
-    setActions : function(upDown, leftRight) {
-        this.actionUpDown = upDown;
-        this.actionLeftRight = leftRight;
+    setActions : function(action) {
+        this.actionUpDown = action[0];
+        this.actionLeftRight = action[1];
+        this.actionFireBullet = action[2];
 
         this.isChanged = true;
         this.captureActions();
@@ -54,6 +55,7 @@ Game.model.Controller = Backbone.Model.extend({
 		this.save({
         	leftRight : this.actionLeftRight,
         	upDown : this.actionUpDown,
+            fireBullet : this.actionFireBullet,
         	timestamp : this.plane.now()
     	});
 

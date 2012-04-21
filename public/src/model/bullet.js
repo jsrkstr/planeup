@@ -1,7 +1,7 @@
 Game.model.Bullet = Backbone.Model.extend({
 
     config : {
-        damage : 10
+        damage : 5
     },
     
     initialize: function(args) {

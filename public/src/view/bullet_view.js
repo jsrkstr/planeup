@@ -29,7 +29,7 @@ Game.view.BulletView = Backbone.View.extend({
     type : "bullet",
 
     config : {
-        radius : 3,
+        radius : 2,
         t : 0.1,
         da : 5,
         u : 50,

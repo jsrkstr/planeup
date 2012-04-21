@@ -106,6 +106,12 @@ Game.mixin.AIControlled = {
 		var newDiff = Math.abs(lineDirection - newDirection);
 		var oldDiff = Math.abs(lineDirection - originalDirection);
 
+
+		if(newDiff < 0.52 && displacement < 400)
+			move.action[2] = 1; // fire bullet
+		else
+			move.action[2] = 0;
+
 		var directionFactor = 0;
 
 		if(oldDiff > Math.PI){
@@ -256,10 +262,10 @@ Game.mixin.AIControlled = {
 
         var turnCoefficient = 300 / (Math.abs(model.u) + 1) ;// range 3 - 9
 
-        turnCoefficient = turnCoefficient > 7 ? 7 : turnCoefficient;
+        turnCoefficient = turnCoefficient > 8 ? 8 : turnCoefficient;
 
         // direction
-        switch(model.actionLeftRight) {
+        switch(model.u > 0 ? model.actionLeftRight : 0) {
             case -1 :   model.direction -= turnCoefficient / 100; //0.05; // left
                 break;
 
@@ -284,6 +290,12 @@ Game.mixin.AIControlled = {
 
         model.currPosition.x += dx;
         model.currPosition.y += dy;
+
+    	if(model.currPosition.x < -20)
+        	model.currPosition.x = 1180;
+
+    	if(model.currPosition.x > 1220)
+        	model.currPosition.x = 20;
 
         model.direction = ang < 0 ? 6.28 + ang : ang;
             

@@ -7,8 +7,8 @@ Game.model.Plane = Backbone.Model.extend({
             actionUpDown : 0,
             actionLeftRight : 0
         },
-        captureInterval : 320,
-        applyInterval : 320
+        captureInterval : 400,
+        applyInterval : 400
     },
     
     initialize: function(args) {
@@ -85,6 +85,9 @@ Game.model.Plane = Backbone.Model.extend({
             actionLeftRight : controller.leftRight,
             actionUpDown : controller.upDown
         }, {local : true});
+
+        if(controller.fireBullet)
+            this.fireBullet();
     },
 
 
@@ -126,8 +129,35 @@ Game.model.Plane = Backbone.Model.extend({
     onAIUpdate : function(action){
 
         // perform action
-        this.controller.setActions(action[0], action[1]);
+        this.controller.setActions(action);
 
+    },
+
+    lastBulletTime : 0,
+
+
+    fireBullet : function(){
+        if(Date.now() - this.lastBulletTime < 200)
+            return false;
+
+        this.lastBulletTime = Date.now();
+
+        //fire bullet
+        var q = parseFloat(this.get('direction')) - 0.01;
+        var currPos = this.get("currPosition");
+        var u = parseFloat(this.get("u")) + 10;
+
+        var c = {
+            x : parseFloat(currPos.x) + (30 * Math.cos(q)),
+            y : parseFloat(currPos.y) + (30 * Math.sin(q))
+        };
+
+        Game.bullets.create({
+            id : Date.now(),
+            u : u,
+            q : q,
+            pos : c
+        });
     },
 
 

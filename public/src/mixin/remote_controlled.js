@@ -47,32 +47,11 @@ Game.mixin.RemoteControlled = {
     // },
         
     keyHeld_32 : function () {
-        if(Date.now() - this.lastBulletTime < 200)
-            return false;
-
-        this.lastBulletTime = Date.now();
-        this.keyDown_32();
+        this.model.fireBullet();
     },
 
 
     keyDown_32 : function () {
-        this.lastBulletTime = Date.now();
-
-        //fire bullet
-        var q = parseFloat(this.model.get('direction')) - 0.01;
-        var currPos = this.model.get("currPosition");
-        var u = parseFloat(this.model.get("u")) + 10;
-
-        var c = {
-            x : parseFloat(currPos.x) + (30 * Math.cos(q)),
-            y : parseFloat(currPos.y) + (30 * Math.sin(q))
-        };
-
-        Game.bullets.create({
-            id : Date.now(),
-            u : u,
-            q : q,
-            pos : c
-        });
+        this.model.fireBullet();
     }
 };

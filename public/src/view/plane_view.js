@@ -31,7 +31,7 @@ Game.worker.planeUpdate = worker(function update(model, config, time) { // time 
     // turnCoefficient = 8;
 
     // direction
-    switch(model.u > 0 ? model.actionLeftRight : 0) { // no direction change when no acceleration
+    switch(model.actionLeftRight) { // no direction change when no acceleration
         case -1 :   model.direction -= turnCoefficient / 100; //0.05; // left
             break;
 
@@ -62,6 +62,12 @@ Game.worker.planeUpdate = worker(function update(model, config, time) { // time 
 
     if(model.currPosition.x > 1220)
         model.currPosition.x = 20;
+
+    if(model.currPosition.y < -20)
+        model.currPosition.y = 630;
+
+    if(model.currPosition.y > 670)
+        model.currPosition.y = 20;
 
     model.direction = ang < 0 ? 6.28 + ang : ang;
         
@@ -167,9 +173,7 @@ Game.view.PlaneView = Backbone.View.extend({
             else{
                 this.set_state("dead"); 
                 this.update = function(){};
-                window.setTimeout(function(){
-                    document.location.href = document.location.href;
-                }, 5000);
+                this.model.fireBullet = function(){};
             }
         } else {
             this.set_state("healthy"); 

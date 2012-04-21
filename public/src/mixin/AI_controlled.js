@@ -265,7 +265,7 @@ Game.mixin.AIControlled = {
         turnCoefficient = turnCoefficient > 8 ? 8 : turnCoefficient;
 
         // direction
-        switch(model.u > 0 ? model.actionLeftRight : 0) {
+        switch(model.actionLeftRight) {
             case -1 :   model.direction -= turnCoefficient / 100; //0.05; // left
                 break;
 
@@ -296,6 +296,12 @@ Game.mixin.AIControlled = {
 
     	if(model.currPosition.x > 1220)
         	model.currPosition.x = 20;
+
+        if(model.currPosition.y < -20)
+        	model.currPosition.y = 630;
+
+    	if(model.currPosition.y > 670)
+        	model.currPosition.y = 20;
 
         model.direction = ang < 0 ? 6.28 + ang : ang;
             

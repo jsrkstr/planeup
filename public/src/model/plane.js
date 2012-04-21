@@ -7,8 +7,8 @@ Game.model.Plane = Backbone.Model.extend({
             actionUpDown : 0,
             actionLeftRight : 0
         },
-        captureInterval : 400,
-        applyInterval : 400
+        captureInterval : 500,
+        applyInterval : 500
     },
     
     initialize: function(args) {

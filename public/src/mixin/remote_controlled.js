@@ -53,5 +53,14 @@ Game.mixin.RemoteControlled = {
 
     keyDown_32 : function () {
         this.model.fireBullet();
+    },
+
+    keyHeld_16 : function () {
+        this.model.fireBullet();
+    },
+
+
+    keyDown_16 : function () {
+        this.model.fireBullet();
     }
 };

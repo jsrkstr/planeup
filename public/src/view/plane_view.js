@@ -154,6 +154,8 @@ Game.view.PlaneView = Backbone.View.extend({
         // model.actionUpDown = this.model.get("actionUpDown");
 
         this.model.set(model, {local : true});
+
+        $("#time").html(Math.round((Date.now() - Game.time) / 1000));
     },
 
 

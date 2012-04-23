@@ -39,7 +39,6 @@
 				height : 650px;
 				margin-left : auto;
 				margin-right : auto;
-				box-shadow: 3px 0px 22px 4px blue;
 			}
 			body {
 				padding : 0px;
@@ -77,6 +76,13 @@
 				color : red;
 				font-size : 30px;
 			}
+
+			#time-div {
+				position : fixed;
+				top : 30px;
+				right : 200px;
+				font-size : 25px;
+			}
 		</style>
 
 	</head>
@@ -95,5 +101,6 @@
     	<div id="instructions"><span>PlaneUp</span>: Use arrow keys to move and shift to shoot.</div>
     	<div id="blue-health">100</div>
     	<div id="red-health">100</div>
+    	<div id="time-div">Time(s) : <b id="time"></b></div>
 	</body>
 </html>

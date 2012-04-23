@@ -24,7 +24,7 @@ Game.worker.planeUpdate = worker(function update(model, config, time) { // time 
 
     // velocity dependent turning radius
 
-    var turnCoefficient = 300 / (Math.abs(model.u) + 1) ;// range 3 - 9
+    var turnCoefficient = 400 / (Math.abs(model.u) + 1) ;// range 3 - 9
 
     turnCoefficient = turnCoefficient > 8 ? 8 : turnCoefficient;
 
@@ -178,24 +178,29 @@ Game.view.PlaneView = Backbone.View.extend({
         } else {
             this.set_state("healthy"); 
         }
+
+        $("#" + this.model.get("team") + "-health").html(h);
     },
     
 
     healthy_draw : function(context) {
         this.drawPlane(context, "healthy");
-        this.drawSmoke(context, "white", this.model.get("currPosition"));
+        if(this.model.get("a") > 0)
+            this.drawSmoke(context, "white", this.model.get("currPosition"));
     },
 
 
     injured_draw : function(context){
         this.drawPlane(context, "healthy"); 
-        this.drawSmoke(context, "black", this.model.get("currPosition"));
+        if(this.model.get("a") > 0)
+            this.drawSmoke(context, "black", this.model.get("currPosition"));
     },
 
 
     dead_draw : function(context){
         this.drawPlane(context, "dead");
-        this.drawSmoke(context, "black", this.model.get("currPosition"));
+        if(this.model.get("a") > 0)
+            this.drawSmoke(context, "black", this.model.get("currPosition"));
     },
 
 

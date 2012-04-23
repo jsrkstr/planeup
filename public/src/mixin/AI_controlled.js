@@ -260,7 +260,7 @@ Game.mixin.AIControlled = {
 
         // velocity dependent turning radius
 
-        var turnCoefficient = 300 / (Math.abs(model.u) + 1) ;// range 3 - 9
+        var turnCoefficient = 400 / (Math.abs(model.u) + 1) ;// range 3 - 9
 
         turnCoefficient = turnCoefficient > 8 ? 8 : turnCoefficient;
 

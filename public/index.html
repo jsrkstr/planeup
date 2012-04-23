@@ -39,6 +39,7 @@
 				height : 650px;
 				margin-left : auto;
 				margin-right : auto;
+				box-shadow: 3px 0px 22px 4px blue;
 			}
 			body {
 				padding : 0px;
@@ -60,6 +61,22 @@
 				color : red;
 				font-family: "Century Gothic", CenturyGothic, "AppleGothic", sans-serif;
 			}
+
+			#blue-health {
+				position : fixed;
+				top : 20px;
+				right : 20px;
+				color : blue;
+				font-size : 30px;
+			}
+
+			#red-health {
+				position : fixed;
+				top : 20px;
+				left : 20px;
+				color : red;
+				font-size : 30px;
+			}
 		</style>
 
 	</head>
@@ -76,5 +93,7 @@
     	</div>
 
     	<div id="instructions"><span>PlaneUp</span>: Use arrow keys to move and shift to shoot.</div>
+    	<div id="blue-health">100</div>
+    	<div id="red-health">100</div>
 	</body>
 </html>

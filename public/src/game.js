@@ -89,12 +89,11 @@ Game.onReady(function(){
                 AI : false, 
                 team : "blue",
                 currPosition : {
-                    x : gs.random(300, 400),
-                    y : gs.random(400, 600)
+                    x : gs.random(900, 1000),
+                    y : gs.random(500, 600)
                 },
                 serverTimeDiffAvg : Game.pingTest.serverTimeDiffAvg
             });
-
         
 
             Game.AI = Game.allPlanes.create({
@@ -106,8 +105,8 @@ Game.onReady(function(){
                 AI : true, 
                 team : "red",
                 currPosition : {
-                    x : gs.random(100, 300),
-                    y : gs.random(10, 100)
+                    x : gs.random(10, 100),
+                    y : gs.random(100, 200)
                 },
                 serverTimeDiffAvg : Game.pingTest.serverTimeDiffAvg
             });

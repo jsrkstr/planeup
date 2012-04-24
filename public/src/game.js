@@ -109,7 +109,7 @@ Game.onReady(function(){
             //         y : gs.random(100, 200)
             //     },
             //     serverTimeDiffAvg : Game.pingTest.serverTimeDiffAvg
-            // });
+            //});
 
             Game.time = Date.now();
  

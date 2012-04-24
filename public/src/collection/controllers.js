@@ -20,7 +20,7 @@ Game.collection.Controllers = Backbone.Collection.extend({
                 else 
                     this.add(model);
 
-            }, this), 50);
+            }, this), 0);
             
         }, this);
         
